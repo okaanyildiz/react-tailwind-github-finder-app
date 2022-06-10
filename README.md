@@ -233,3 +233,89 @@ function NotFound() {
 export default NotFound
 
 ```
+GETTING TOKEN FROM THE GITHUB API
+
+1) The App we will show the user Github Profiles. We can get example data via the Postman searching for https://api.github.com/users/[user]. 
+2) Go to Github and generate a new access token in developer settings. That token must include “repo” and “user”. 
+3) Inside the project folder make the “.env” file. Store the access token here:
+
+REACT_APP_GITHUB_URL = "https://api.github.com"
+REACT_APP_GITHUB_TOKEN = "[access token]"
+
+4) Restart the react server. 
+5) In the home page wrap the h1 element with a div. 
+6) Write that line under the h1 element in that div. 
+{process.env.REACT_APP_GITHUB_TOKEN}
+7) After monitoring the access token in the homepage, delete the process code. 
+
+MAKING THE USERRESULTS COMPONENT
+
+1) Inside the components folder make the “users” folder. 
+2) In that folder create the UserResults.jsx file. 
+3) Go to the Home.jsx. Import UserResults(). 
+4) Add the <UserResults /> inside the div. 
+5) Install-Import “axios”, “useEffect” “useState” into the UserResults.jsx. 
+6) Inside the UserResults(), make the asynchronous function fetchUsers() to fetch the users from Github Api. Assign the data to the response const. And console.log “response.data” to reach the users array.
+7) You can see an array of 30 users inside the response in the console. 
+8) Make the useEffect hook and call the fetchUsers() inside it. 
+10) Above the useEffect hook, create two useState hook:
+```
+const [users, setUsers] = useState([])
+const [loading, setLoading] = useState(true)
+
+ ```
+11) Instead of console logging the response, use setUsers. 
+12) Under that function, use setLoading(false). 
+13) In the div of the return statement add the tailwind classes in the code below. 
+14) In that div we will map through the users. 
+15) With map() method, map the users  and show the data in an h3 element. To reach the users we have to map “login”. 
+16) Now you can display the users in the home page.
+17) If we wait for the data we will show a “Loading…” warning. So we will add an if statement for conditional rendering. 
+18) Wrap the return statement with an if conditional. If the data doesn’t show up, display an h3 element with a “Loading…” content. 
+UserResults.jsx :
+
+```
+import axios from 'axios'
+import { useEffect, useState } from 'react'
+ 
+function UserResults() {
+ 
+   // Api data trackers
+   const [users, setUsers] = useState([])
+   const [loading, setLoading] = useState(true)
+ 
+   useEffect(() => {
+       fetchUsers()
+   }, [])
+ 
+   // Fetch users from the api
+   async function fetchUsers() {
+       const response = await axios.get(`${process.env.REACT_APP_GITHUB_URL}/users`, {
+           headers: {
+               Authorization: `token ${process.env.REACT_APP_GITHUB_TOKEN}`
+           }
+       })
+       // Add .data to reach the users array
+       setUsers(response.data)
+       setLoading(false)
+   }
+   // Add a conditional rendering in case of a delay
+   if (!loading) {
+       return (
+           <div className='grid grid-cols-1 gap-8 xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2'>
+               // List the users
+               {users.map((user) => (
+                   <h3>{user.login}</h3>
+               ))}
+           </div>
+       )
+   } else {
+       return (
+           <h3>Loading...</h3>
+       )
+   }
+}
+ 
+export default UserResults
+
+```
