@@ -1,29 +1,16 @@
-import axios from 'axios'
-import { useEffect, useState } from 'react'
+import { useEffect, useContext } from 'react'
 import Spinner from '../layout/Spinner'
 import UserItem from './UserItem'
+import GithubContext from '../context/github/GithubContext'
 
 function UserResults() {
-
-    // Api data trackers
-    const [users, setUsers] = useState([])
-    const [loading, setLoading] = useState(true)
+    // Api data tracker
+    const { users, loading, fetchUsers } = useContext(GithubContext)
 
     useEffect(() => {
         fetchUsers()
     }, [])
 
-    // Fetch users from the api
-    async function fetchUsers() {
-        const response = await axios.get(`${process.env.REACT_APP_GITHUB_URL}/users`, {
-            headers: {
-                Authorization: `token ${process.env.REACT_APP_GITHUB_TOKEN}`
-            }
-        })
-        // Add .data to reach the users array
-        setUsers(response.data)
-        setLoading(false)
-    }
     // Add a conditional rendering in case of a delay
     if (!loading) {
         return (

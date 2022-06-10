@@ -440,3 +440,137 @@ UserItem.propTypes = {
 export default UserItem
 
 ```
+SETTING UP GITHUB CONTEXT
+
+1) We’re going to have more than one context. 
+2) Inside the components folder, create the context folder. 
+3) Inside the context folder, create the github folder. 
+4) Inside the github folder, create GithubContext.js. 
+5) Import createContext into the GithubContext.js
+6) Declare GithubContext as createContext()
+7) Shorten the Github Url and Github token with two consts. 
+8) Make the GithubProvider({children}) function to export. 
+9) Copy two Api data tracker useState const in the UserResults.jsx and paste into the provider function. Import useState into the GithubContext.js
+10) Copy the fetchUsers() function from UserResults() and paste it under the useState hooks in the provider function. Import axios into the GithubContext.js
+11) We can rearrange the fetchUser() function with GITHUB_URL and GITHUB_TOKEN consts. 
+12) At the bottom of the provider function, return GithubContext.Provider
+12) <GithubContext.Provider> will have the destructured “users” and “loading” and “fetchUsers” props. And it will contend with {children}. 
+13) Eventually export default GithubContext. 
+14) Context has to wrap the components. 
+15) Go to App.js. Import GithubProvider() function from GithubContext.js
+16) Wrap all the code inside the return statement with the GithubProvider.
+17) Now we have to clear UserResults.jsx
+18) Delete the fetchUsers function and useState consts we have copied. 
+19) Remove useState and add useContext into import statements. Delete axios import. 
+20) Import GithubContext. 
+21) On top of the UseResults() function add the destructured useContext const: 
+const {users, loading, fetchUsers} = useContext(GithubContext)
+
+UserResults.jsx :
+```
+import { useEffect, useContext } from 'react'
+import Spinner from '../layout/Spinner'
+import UserItem from './UserItem'
+import GithubContext from '../context/github/GithubContext'
+ 
+function UserResults() {
+   // Api data tracker
+   const { users, loading, fetchUsers } = useContext(GithubContext)
+ 
+   // Fetch users from the api
+   useEffect(() => {
+       fetchUsers()
+   }, [])
+ 
+   // Add a conditional rendering in case of a delay
+   if (!loading) {
+       return (
+           <div className='grid grid-cols-1 gap-8 xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2'>
+               // List the users
+               {users.map((user) => (
+                   <UserItem key={user.id} user={user} />
+               ))}
+           </div>
+       )
+   } else {
+       return (
+           <Spinner />
+       )
+   }
+}
+export default UserResults
+```
+
+GithubContext.js : 
+```
+import { createContext, useState } from 'react'
+import axios from 'axios'
+ 
+const GithubContext = createContext()
+ 
+const GITHUB_URL = process.env.REACT_APP_GITHUB_URL
+const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN
+ 
+export function GithubProvider({ children }) {
+   // Api data trackers
+   const [users, setUsers] = useState([])
+   const [loading, setLoading] = useState(true)
+ 
+   // Fetch users from the api
+   async function fetchUsers() {
+       const response = await axios.get(`${GITHUB_URL}/users`, {
+           headers: {
+               Authorization: `token ${GITHUB_TOKEN}`
+           }
+       })
+ 
+       // Add .data to reach the users array
+       setUsers(response.data)
+       setLoading(false)
+   }
+   return <GithubContext.Provider value={{
+       users,
+       loading,
+       fetchUsers
+   }}>
+       {children}
+   </GithubContext.Provider>
+}
+export default GithubContext
+
+```
+
+App.js :
+```
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import Navbar from './components/layout/Navbar'
+import Footer from './components/layout/Footer'
+import Home from './pages/Home'
+import About from './pages/About'
+import NotFound from './pages/NotFound'
+import { GithubProvider } from './components/context/github/GithubContext'
+ 
+function App() {
+ return (
+   <GithubProvider>
+     <Router>
+       <div className="flex flex-col justify-between h-screen">
+         <Navbar />
+ 
+         <main>
+           <Routes>
+             <Route path='/' element={<Home />} />
+             <Route path='/about' element={<About />} />
+             <Route path='/notfound' element={<NotFound />} />
+           </Routes>
+         </main>
+ 
+         <Footer />
+       </div>
+     </Router>
+   </GithubProvider>
+ )
+}
+ 
+export default App
+```
