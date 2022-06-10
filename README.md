@@ -319,3 +319,55 @@ function UserResults() {
 export default UserResults
 
 ```
+ADDING THE LOADING SPINNER
+
+1) Inside the layouts folder, create the “assets” folder. 
+2) Add a spinner gif inside the assets folder. 
+3) Inside the layouts folder create Spinner.jsx
+4) Import the spinner gif into the Spinner.jsx
+5) Make the necessary visual adjustments as the code below. 
+
+Spinner.jsx: 
+
+```
+import spinner from './assets/spinner.gif'
+ 
+function Spinner() {
+   return (
+       <div className='w-100 mt-20'>
+           <img
+               width={180}
+               className='text-center mx-auto'
+               src={spinner}
+               alt='Loading...'
+           />
+       </div>
+   )
+}
+ 
+export default Spinner
+
+```
+
+6) Go to UserResults.jsx. Import the Spinner.jsx. 
+7) Instead of “Loading…” place the <Spinner />
+
+UserResults.jsx : 
+
+```
+if (!loading) {
+       return (
+           <div className='grid grid-cols-1 gap-8 xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2'>
+               // List the users
+               {users.map((user) => (
+                   <h3>{user.login}</h3>
+               ))}
+           </div>
+       )
+   } else {
+       return (
+           <Spinner />
+       )
+   }
+
+```
