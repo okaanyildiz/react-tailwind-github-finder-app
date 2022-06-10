@@ -233,6 +233,7 @@ function NotFound() {
 export default NotFound
 
 ```
+
 GETTING TOKEN FROM THE GITHUB API
 
 1) The App we will show the user Github Profiles. We can get example data via the Postman searching for https://api.github.com/users/[user]. 
@@ -257,7 +258,8 @@ MAKING THE USERRESULTS COMPONENT
 5) Install-Import “axios”, “useEffect” “useState” into the UserResults.jsx. 
 6) Inside the UserResults(), make the asynchronous function fetchUsers() to fetch the users from Github Api. Assign the data to the response const. And console.log “response.data” to reach the users array.
 7) You can see an array of 30 users inside the response in the console. 
-8) Make the useEffect hook and call the fetchUsers() inside it. 
+8) Make the useEffect hook.
+9) Call the fetchUsers() inside useEffect.
 10) Above the useEffect hook, create two useState hook:
 ```
 const [users, setUsers] = useState([])
@@ -319,13 +321,14 @@ function UserResults() {
 export default UserResults
 
 ```
+
 ADDING THE LOADING SPINNER
 
 1) Inside the layouts folder, create the “assets” folder. 
 2) Add a spinner gif inside the assets folder. 
 3) Inside the layouts folder create Spinner.jsx
 4) Import the spinner gif into the Spinner.jsx
-5) Make the necessary visual adjustments as the code below. 
+5) Make the necessary visual adjustments the way that the code below. 
 
 Spinner.jsx: 
 
@@ -350,7 +353,7 @@ export default Spinner
 ```
 
 6) Go to UserResults.jsx. Import the Spinner.jsx. 
-7) Instead of “Loading…” place the <Spinner />
+7) Replace “Loading…” with Spinner
 
 UserResults.jsx : 
 
@@ -369,5 +372,71 @@ if (!loading) {
            <Spinner />
        )
    }
+
+```
+
+MAKING THE USERITEM COMPONENT
+
+1) Inside the users folder, create the UserItem.jsx. 
+2) Inside the UserResults.jsx, import the UserItem.jsx
+3) Inside UserResults() function, replace the h3 with UserItem. 
+4) UserItem will get 2 props: key as “user.id” and user as “user”. 
+
+UserResults.jsx :
+
+```
+<div className='grid grid-cols-1 gap-8 xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2'>
+               // List the users
+               {users.map((user) => (
+                   <UserItem key={user.id} user={user} />
+               ))}
+           </div>
+
+```
+5) Go to the UserItem.jsx, import prop-types. 
+6) In the UserItem() function make “user” as an argument with destructuring. 
+7) Set the user’s prop type as “object.isRequired”
+8) Inside the UserItem() function’s arguments, add “login” and “avatar_url” as the properties of the user with destructuring. 
+9) Now we can return “login” and “avatar_url” directly inside the return statement of the UserItem(). 
+10) Add jsx shown in the code below. 
+11) Add the login and avatar into the jsx. 
+12) Import Link from React Router. Add a router link under the login h2. That link will go to each “user.login”
+
+UserItem.jsx : 
+
+```
+import PropTypes from 'prop-types'
+import { Link } from 'react-router-dom'
+ 
+function UserItem({ user: { login, avatar_url } }) {
+   return (
+       <div className='card shadow-md compact side bg-base-100'>
+           <div className='flex-row items-center space-x-4 card-body'>
+               <div>
+                   <div className='avatar'>
+                       <div className='rounded-full shadow w-14 h-14'>
+                           <img src={avatar_url} alt='Profile' />
+                       </div>
+                   </div>
+               </div>
+               <div>
+                   <h2 className='card-title'>{login}</h2>
+                   <Link
+                       className='text-base-content text-opacity-40'
+                       to={`/users/${login}`}
+                   >
+                       Visit Profile
+                   </Link>
+               </div>
+           </div>
+       </div>
+   )
+}
+ 
+UserItem.propTypes = {
+   user: PropTypes.object.isRequired
+}
+ 
+export default UserItem
 
 ```
