@@ -1,15 +1,11 @@
-import { useEffect, useContext } from 'react'
+import { useContext } from 'react'
 import Spinner from '../layout/Spinner'
 import UserItem from './UserItem'
 import GithubContext from '../context/github/GithubContext'
 
 function UserResults() {
     // Api data tracker
-    const { users, loading, fetchUsers } = useContext(GithubContext)
-
-    useEffect(() => {
-        fetchUsers()
-    }, [])
+    const { users, loading } = useContext(GithubContext)
 
     // Add a conditional rendering in case of a delay
     if (!loading) {

@@ -440,6 +440,7 @@ UserItem.propTypes = {
 export default UserItem
 
 ```
+
 SETTING UP GITHUB CONTEXT
 
 1) We’re going to have more than one context. 
@@ -573,4 +574,179 @@ function App() {
 }
  
 export default App
+```
+
+MAKING THE REDUCER HOOK
+
+1) Inside the Github folder, create the GithubReducer.js file. 
+2) Make the GithubReducer function with the arguments: state and action. 
+3) State is the current state. 
+4) Action is going to be an object. By the help of the action we will evaluate the data. 
+5) Go to GithubContext.js. Switch useState with useReducer in the import statements. From now on we will use the Reducer hook to track the state. 
+6) Import GithubReducer.js
+7) Inside the GithubProvider() function, delete the useState consts. Add and initialState object const, that shows the initial state: 
+const initialState = { users: [ ], loading: false }
+8) Under that const, make the reducer hook: 
+const [state, dispatch] = useReducer(GithubReducer, initialState)
+9) Instead of functions of useState, we’re going to use dispatch function. 
+10) Delete the setUsers() and setLoading() inside the fetchUsers() function. Instead, write the dispatch function :
+```
+dispatch({
+           type: 'GET_USERS',
+           payload: data
+       })
+```
+
+11) We’re going to use the properties of dispatch() in the GithubReducer() function. “Payload” will be the data we fetch from the api. 
+12) Now inside the Githubprovider() function, we have to update GithubContext.Provider : 
+
+```
+return <GithubContext.Provider
+   value={{
+       users: state.users,
+       loading: state.loading,
+       fetchUsers
+   }}>
+       {children}
+   </GithubContext.Provider>
+
+```
+Because now we’re dealing with the “state”. 
+
+GithubContext.js : 
+```
+import { createContext, useReducer } from 'react'
+import axios from 'axios'
+import GithubReducer from './GithubReducer'
+ 
+const GithubContext = createContext()
+ 
+const GITHUB_URL = process.env.REACT_APP_GITHUB_URL
+const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN
+ 
+// Context provider function
+export const GithubProvider = ({ children }) => {
+   // Api data tracker
+   const initialState = {
+       users: [],
+       loading: false
+   }
+   const [state, dispatch] = useReducer(githubReducer, initialState)
+ 
+   // Fetch users from the api
+   async function fetchUsers() {
+       const response = await axios.get(`${GITHUB_URL}/users`, {
+           headers: {
+               Authorization: `token ${GITHUB_TOKEN}`
+           }
+       })
+ 
+       dispatch({
+           type: 'GET_USERS',
+           payload: data
+       })
+   }
+   return <GithubContext.Provider
+       value={{
+           users: state.users,
+           loading: state.loading,
+           fetchUsers
+       }}>
+       {children}
+   </GithubContext.Provider>
+}
+ 
+export default GithubContext
+```
+
+GETTING RID OF FETCHING USERS
+
+1) Fetching some user’s data was only for testing the App. So we don’t need them anymore. 
+2) Add a switch statement inside the githubReducer(). 
+3) The switch statement will have the “action.type” as the expression.
+4) First case “GET_USERS” will get the users from the api. Since we get the response, that case will stop loading and change it from true to false. 
+5) And right before we make any requests we want to change the loading as true. 
+6) So we’ll add another case as “SET_LOADING” And that case will set loading if we wait for the response. 
+7) Now inside the fetchUsers() function in GithubContext.js, beneath the dispatch() function, add the setLoading() function. This function will trigger the dispatch({type: SET_LOADING}) function. 
+8) Call the setLoading() function on top of the fetchUsers() function.
+9) Now we can get rid of useEffect and fetchUsers(). 
+10) Go to UserResults.jsx. Delete the entire useEffect hook. Delete the fetchUsers from useContext hook. Remove the useEffect from the import statements. 
+11) Now we cannot see the default 30 first at home page anymore. Next thing we’re going to do is to make the UserSearch component.
+
+GithubContext.js :
+```
+import { createContext, useReducer } from 'react'
+import axios from 'axios'
+import githubReducer from './GithubReducer'
+ 
+const GithubContext = createContext()
+ 
+const GITHUB_URL = process.env.REACT_APP_GITHUB_URL
+const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN
+ 
+// Context provider function
+export function GithubProvider({ children }) {
+   // Api data tracker
+   const initialState = {
+       users: [],
+       loading: false
+   }
+   const [state, dispatch] = useReducer(githubReducer, initialState)
+ 
+   // Fetch initial users for testing purposes
+   async function fetchUsers() {
+       setLoading()
+       const response = await axios.get(`${GITHUB_URL}/users`, {
+           headers: {
+               Authorization: `token ${GITHUB_TOKEN}`
+           }
+       })
+ 
+       dispatch({
+           type: 'GET_USERS',
+           payload: response.data
+       })
+   }
+ 
+   function setLoading() {
+       dispatch({ type: 'SET_LOADING' })
+   }
+ 
+   return <GithubContext.Provider
+       value={{
+           users: state.users,
+           loading: state.loading,
+           searchUsers,
+       }}>
+       {children}
+   </GithubContext.Provider>
+}
+ 
+export default GithubContext
+
+```
+
+ GithubReducer.js :
+
+const githubReducer = (state, action) => {
+   switch (action.type) {
+       case 'GET_USERS':
+           return {
+               ...state,
+               users: action.payload,
+               loading: false,
+           }
+        case 'SET_LOADING':
+           return {
+               ...state,
+               loading: true,
+           }
+       default:
+           return state
+   }
+}
+ 
+export default githubReducer
+ 
+
 ```
