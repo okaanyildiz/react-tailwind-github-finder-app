@@ -15,9 +15,6 @@ function GithubReducer(state, action) {
         default:
             return state
     }
-    return (
-        <div>GithubReducer</div>
-    )
 }
 
 export default GithubReducer

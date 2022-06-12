@@ -853,3 +853,152 @@ export default Home
 
 ```
 
+SEARCHING THE USERS
+
+1) Go to the GithubContext.js
+2) We’re going to change the fetchUsers() as searchUsers(). 
+3) The searchUsers(text) will take the “text” as an argument, which is typed in the input. 
+3) Under the setLoading(), add the search parameters within the “params” object const. 
+4) Github wants the “user search” with the “q” parameter. So the “q” parameter will be the text. 
+
+```
+const params = new URLSearchParams({
+           q: text
+       })
+
+```
+
+5) Now we’ll transform the axios.get method into the standard fetch() method. Remove the axios from the import statements. Remember to transform the response data into json. 
+6) We need only the “items” array from the coming data. So write the {items} with destructuring as the response of coming data. Add items into the dispatch() function as the new “payload”. 
+7)  Inside the GithubContext.Provider, change the fetchUsers value with searchUsers. 
+8) Go to UserSearch.jsx. Add searchUsers to the useContext hook. 
+9) We’ll call the searchUsers(text) function inside the handleSubmit with the “text” argument. 
+10) Now we can search for users. 
+
+
+GithubContext.js : 
+```
+import { createContext, useReducer } from 'react'
+import GithubReducer from './GithubReducer'
+ 
+const GithubContext = createContext()
+ 
+const GITHUB_URL = process.env.REACT_APP_GITHUB_URL
+const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN
+ 
+export function GithubProvider({ children }) {
+   // Api data tracker
+   const initialState = {
+       users: [],
+       loading: false,
+   }
+ 
+   const [state, dispatch] = useReducer(GithubReducer, initialState)
+ 
+   // Get search results
+   async function searchUsers(text) {
+       setLoading()
+ 
+       const params = new URLSearchParams({
+           q: text,
+       })
+ 
+       const response = await fetch(`${GITHUB_URL}/search/users?${params}`, {
+           headers: {
+               Authorization: `token ${GITHUB_TOKEN}`,
+           },
+       })
+       // Destructure the data, we need only items from the coming data.
+       const { items } = await response.json()
+ 
+       dispatch({
+           type: 'GET_USERS',
+           payload: items,
+       })
+   }
+ 
+   // Set loading
+   function setLoading() {
+       dispatch({ type: 'SET_LOADING' })
+   }
+ 
+   return (
+       <GithubContext.Provider
+           value={{
+               users: state.users,
+               loading: state.loading,
+               searchUsers,
+           }}
+       >
+           {children}
+       </GithubContext.Provider>
+   )
+}
+ 
+export default GithubContext
+```
+
+UserSearch.jsx :
+
+```
+
+import { useState, useContext } from 'react'
+import GithubContext from '../context/github/GithubContext'
+ 
+function UserSearch() {
+ 
+   const [text, setText] = useState('')
+ 
+   const { users, searchUsers } = useContext(GithubContext)
+ 
+   function handleChange(e) {
+       setText(e.target.value)
+   }
+ 
+   function handleSubmit(e) {
+       e.preventDefault()
+ 
+       if (text === '') {
+           alert('Pls enter sth')
+       } else {
+           searchUsers(text)
+           setText('')
+       }
+   }
+ 
+   return (
+       <div className='grid grid-cols-1 xl:grid-cols-2 lg:grid-cols-2 md:grid-cols-2 mb-8 gap-8'>
+           <div>
+               <form onSubmit={handleSubmit}>
+                   <div className='form-control'>
+                       <div className='relative'>
+                           <input
+                               type='text'
+                               className='w-full pr-40 bg-gray-200 input input-lg text-black'
+                               placeholder='Search'
+                               value={text}
+                               handleChange={handleChange}
+                           />
+                           <button
+                               type='submit'
+                               className='absolute top-0 right-0 rounded-l-none w-36 btn btn-lg'
+                           >
+                               Go
+                           </button>
+                       </div>
+                   </div>
+               </form>
+           </div>
+           {users.length > 0 && (
+               <div>
+                   <button>
+                       Clear
+                   </button>
+               </div>
+           )}
+       </div>
+   )
+}
+export default UserSearch
+
+```

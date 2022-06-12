@@ -5,7 +5,7 @@ function UserSearch() {
 
     const [text, setText] = useState('')
 
-    const { users } = useContext(GithubContext)
+    const { users, searchUsers } = useContext(GithubContext)
 
     function handleChange(e) {
         setText(e.target.value)
@@ -17,8 +17,8 @@ function UserSearch() {
         if (text === '') {
             alert('Pls enter sth')
         } else {
-            // search users
-            console.log(text)
+            // Search users
+            searchUsers(text)
             setText('')
         }
     }
