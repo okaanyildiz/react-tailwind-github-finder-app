@@ -726,8 +726,9 @@ export default GithubContext
 
 ```
 
- GithubReducer.js :
+GithubReducer.js :
 
+```
 const githubReducer = (state, action) => {
    switch (action.type) {
        case 'GET_USERS':
@@ -748,5 +749,107 @@ const githubReducer = (state, action) => {
  
 export default githubReducer
  
+```
+
+MAKING THE USERSEARCH COMPONENT
+
+1) Inside the users folder, create the UserSearch.jsx. 
+2) Go to Home.jsx and add the <UserSearch /> above the UserResults.
+3) Turn back to UserSearch.jsx. Add the Tailwind classes to the search div shown in the code below.
+4) Create a “form” element for the search. Inside the form element make an input, a submit button and a “clear” button. 
+5) Next, we’ll add the state for the input element. 
+6) Import useState hook. 
+7) On top of the UserSearch() function, place the useState hook with [text, setText]. The initial is going to be an empty string. 
+8) To track the input, add the “value”property with the “text” value. 9) handleChange and handleSubmit with a function. Handle submit should include an if statements, which checks if the text is empty and gives alert.
+10) We want to display the clear button only when there are users in the state. Otherwise there is no need to display that button. So we will use “useContext” to have access to the users array to see whether it is empty. 
+11) Inside the UserSearch.jsx, import useContext. 
+12) Beneath the useState hook, define the Context hook: 
+const { users } = useContext(GithubContext)
+13) Now we will wrap the clear button div with a ternary operator which looks for if the users array is empty. We can check it out with “users.length”
+
+UserSearch.jsx :
 
 ```
+import { useState, useContext } from 'react'
+import GithubContext from '../context/github/GithubContext'
+ 
+function UserSearch() {
+ 
+   const [text, setText] = useState('')
+ 
+   const { users } = useContext(GithubContext)
+ 
+   function handleChange(e) {
+       setText(e.target.value)
+   }
+ 
+   function handleSubmit(e) {
+       e.preventDefault()
+ 
+       if (text === '') {
+           alert('Pls enter sth')
+       } else {
+           // search users
+           console.log(text)
+           setText('')
+       }
+   }
+ 
+   return (
+       <div className='grid grid-cols-1 xl:grid-cols-2 lg:grid-cols-2 md:grid-cols-2 mb-8 gap-8'>
+           <div>
+               <form onSubmit={handleSubmit}>
+                   <div className='form-control'>
+                       <div className='relative'>
+                           <input
+                               type='text'
+                               className='w-full pr-40 bg-gray-200 input input-lg text-black'
+                               placeholder='Search'
+                               value={text}
+                               onChange={handleChange}
+                           />
+                           <button
+                               type='submit'
+                               className='absolute top-0 right-0 rounded-l-none w-36 btn btn-lg'
+                           >
+                               Go
+                           </button>
+                       </div>
+                   </div>
+               </form>
+           </div>
+           {users.length > 0 && (
+               <div>
+                   <button>
+                       Clear
+                   </button>
+               </div>
+           )}
+ 
+       </div>
+   )
+}
+ 
+export default UserSearch
+
+```
+
+Home.jsx : 
+
+```
+import UserResults from "../components/users/UserResults"
+import UserSearch from "../components/users/UserSearch"
+ 
+function Home() {
+   return (
+       <div>
+           <UserSearch />
+           <UserResults />
+       </div>
+   )
+}
+ 
+export default Home
+
+```
+
