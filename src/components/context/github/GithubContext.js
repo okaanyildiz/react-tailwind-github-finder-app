@@ -36,6 +36,12 @@ export function GithubProvider({ children }) {
             payload: items,
         })
     }
+    // Clear users
+    function clearUsers() {
+        dispatch({
+            type: 'CLEAR_USERS'
+        })
+    }
 
     // Set loading
     function setLoading() {
@@ -48,6 +54,7 @@ export function GithubProvider({ children }) {
                 users: state.users,
                 loading: state.loading,
                 searchUsers,
+                clearUsers
             }}
         >
             {children}

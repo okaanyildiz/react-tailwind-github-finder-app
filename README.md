@@ -1002,3 +1002,177 @@ function UserSearch() {
 export default UserSearch
 
 ```
+
+CLEARING THE USERS
+
+1) Go to GithubContext.js. 
+2) Add the clearUsers() function beneath the searchUsers() function. 
+3) Inside the clearUsers() function, trigger dispatch function with the destructured argument {type: ‘CLEAR_USERS’}
+4) Now go to GithubReducer.js. 
+5) Add the CLEAR_USERS as the new case. 
+6) Here we’ll return the current state and the users as an empty array. 
+7) We have to pass the clearUsers() function as a value into the GithubContext.Provider
+8)  Go to UserSearch.jsx. 
+9) Add clearUsers to the useContext hook. 
+10) Add clearUsers() to the clear button with the onClick property as an event handler. 
+11) Now we can clear the search results with the clear button. 
+
+GithubContext.js : 
+
+```
+import { createContext, useReducer } from 'react'
+import githubReducer from './GithubReducer'
+ 
+const GithubContext = createContext()
+ 
+const GITHUB_URL = process.env.REACT_APP_GITHUB_URL
+const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN
+ 
+// Context provider function
+export const GithubProvider = ({ children }) => {
+   // Api data tracker
+   const initialState = {
+       users: [],
+       loading: false
+   }
+   const [state, dispatch] = useReducer(githubReducer, initialState)
+ 
+   // Get search results
+   async function searchUsers(text) {
+       setLoading()
+ 
+       const params = new URLSearchParams({
+           q: text
+       })
+ 
+       const response = await fetch(`${GITHUB_URL}/search/users?${params}`, {
+           headers: {
+               Authorization: `token ${GITHUB_TOKEN}`
+           }
+       })
+       // Destructure the data, because we need only items from the coming data.
+       const { items } = await response.json()
+ 
+       dispatch({
+           type: 'GET_USERS',
+           payload: items
+       })
+       // Clear users from the state
+       function clearUsers() {
+           dispatch({ type: 'CLEAR_USERS' })
+       }
+ 
+       // Set Loading
+       function setLoading() {
+           dispatch({ type: 'SET_LOADING' })
+       }
+ 
+       return <GithubContext.Provider
+           value={{
+               users: state.users,
+               loading: state.loading,
+               searchUsers,
+               clearUsers
+           }}>
+           {children}
+       </GithubContext.Provider>
+   }
+}
+ 
+export default GithubContext
+ 
+```
+
+GithubReducer.js : 
+```
+const githubReducer = (state, action) => {
+   switch (action.type) {
+       case 'GET_USERS':
+           return {
+               ...state,
+               users: action.payload,
+               loading: false,
+           }
+       case 'SET_LOADING':
+           return {
+               ...state,
+               loading: true,
+           }
+       case 'CLEAR_USERS':
+           return {
+               ...state,
+               users: [],
+           }
+       default:
+           return state
+   }
+}
+ 
+export default githubReducer
+
+```
+UserSearch.jsx : 
+
+```
+
+import { useState, useContext } from 'react'
+import GithubContext from '../context/github/GithubContext'
+ 
+function UserSearch() {
+ 
+   const [text, setText] = useState('')
+ 
+   const { users, searchUsers, clearUsers } = useContext(GithubContext)
+ 
+   function handleChange(e) {
+       setText(e.target.value)
+   }
+ 
+   function handleSubmit(e) {
+       e.preventDefault()
+ 
+       if (text === '') {
+           alert('Pls enter sth')
+       } else {
+           searchUsers(text)
+           setText('')
+       }
+   }
+ 
+   return (
+       <div className='grid grid-cols-1 xl:grid-cols-2 lg:grid-cols-2 md:grid-cols-2 mb-8 gap-8'>
+           <div>
+               <form onSubmit={handleSubmit}>
+                   <div className='form-control'>
+                       <div className='relative'>
+                           <input
+                               type='text'
+                               className='w-full pr-40 bg-gray-200 input input-lg text-black'
+                               placeholder='Search'
+                               value={text}
+                               handleChange={handleChange}
+                           />
+                           <button
+                               type='submit'
+                               className='absolute top-0 right-0 rounded-l-none w-36 btn btn-lg'
+                           >
+                               Go
+                           </button>
+                       </div>
+                   </div>
+               </form>
+           </div>
+           {users.length > 0 && (
+               <div>
+                   <button onClick={clearUsers} className='btn btn-ghost btn-lg'>
+                       Clear
+                   </button>
+               </div>
+           )}
+ 
+       </div>
+   )
+}
+export default UserSearch
+
+```

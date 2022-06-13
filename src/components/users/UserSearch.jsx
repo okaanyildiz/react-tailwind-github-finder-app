@@ -5,7 +5,7 @@ function UserSearch() {
 
     const [text, setText] = useState('')
 
-    const { users, searchUsers } = useContext(GithubContext)
+    const { users, searchUsers, clearUsers } = useContext(GithubContext)
 
     function handleChange(e) {
         setText(e.target.value)
@@ -48,7 +48,7 @@ function UserSearch() {
             </div>
             {users.length > 0 && (
                 <div>
-                    <button>
+                    <button onClick={clearUsers}>
                         Clear
                     </button>
                 </div>
