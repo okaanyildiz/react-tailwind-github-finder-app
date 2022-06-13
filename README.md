@@ -1176,3 +1176,268 @@ function UserSearch() {
 export default UserSearch
 
 ```
+
+MAKING THE ALERT CONTEXT & REDUCER
+
+1) If the user sends a request typing nothing, the window alerts. We’ll arrange a new alert method. 
+2) Inside the context folder, make the “alert” folder. 
+3) Inside the alert folder, create AlertContext.js and AlertReducer.js.
+4) Inside the AlertContext.js, import createContext and useReducer. 
+5) Import AlertReducer.jsx
+6) const AlertContext = createContext()
+7) Make the exportable AlertProvider() function. It needs the destructured {children} argument. 
+8) Inside the AlertProvider(), set up the useReducer:
+const initialState = null
+const [state, dispatch] = useReducer(alertReducer, initialState)
+9) Then return the AlertContext.Provider with the content of {children}. The value of the Provider will be “alert: state”
+10)  Export the AlertContext. 
+11) Go to App.js
+12) Import AlertProvider(). 
+13) We’re going to use the AlertProvider() just under the GithubProvider().
+14)  Go to AlertContext.js
+15) Just above the return statement, make the setAlert function, 
+16) setAlert(msg, type) is going to get two arguments. We will trigger the dispatch() function here with the destructured argument: 
+{type: ‘SET_ALERT’, 
+payload : {msg, type}
+17) Inside the setAlert function, use the setTimeout() method to limit the alert. 
+18) setTimeout() will invoke the dispatch() with a callback function. dispatch() will have a destructured argument {type: ‘REMOVE_ALERT’. The timeout will be 3000ms.
+19) Go to the AlertReducer.js
+20) Make the AlertReducer(state, action) function. 
+21) The switch statement will take (action.type) as the expression. 
+22) Add into the switch statement the ‘SET_ALERT’ and ‘REMOVE_ALERT’ as cases. 
+23) Export the AlertReducer.js
+24) Go to the AlertContext.js
+25) Add setAlert into the the values of AlertContext.Provider
+
+App.js : 
+```
+import './index.css';
+import { BrowserRouter as Route, Routes } from 'react-router-dom'
+import Navbar from './components/layouts/Navbar'
+import Footer from './components/layouts/Footer'
+import Home from './pages/Home'
+import About from './pages/About'
+import NotFound from './pages/NotFound'
+import { GithubProvider } from './context/github/GithubContext'
+import { AlertProvider } from './context/alert/AlertContext'
+ 
+function App() {
+ return (
+   <GithubProvider>
+     <AlertProvider>
+       <div className='flex flex-col justify-between h-screen'>
+         <Navbar />
+ 
+         <main className='container mx-auto px-3 pb-12'>
+           <Routes>
+             <Route path='/' element={<Home />} />
+             <Route path='/about' element={<About />} />
+             <Route path='/notfound' element={<NotFound />} />
+             <Route path='*' element={<NotFound />} />
+           </Routes>
+         </main>
+         <Footer />
+       </div>
+     </AlertProvider>
+   </GithubProvider>
+ )
+}
+ 
+export default App;
+
+```
+
+AlertContext.js : 
+```
+import { createContext, useReducer } from 'react'
+import AlertReducer from './AlertReducer'
+ 
+const AlertContext = createContext()
+ 
+export function AlertProvider({ children }) {
+ 
+   const initialState = null
+   const [state, dispatch] = useReducer(AlertReducer, initialState)
+ 
+   // Set an alert
+   function setAlert(msg, type) {
+       dispatch({
+           type: 'SET_ALERT',
+           payload: { msg, type }
+       })
+       setTimeout(() => dispatch({ type: 'REMOVE_ALERT' }), 3000)
+   }
+ 
+   return (
+       <AlertContext.Provider
+           value={{
+               alert: state,
+               setAlert
+           }}
+       >
+           {children}
+       </AlertContext.Provider>
+   )
+}
+ 
+export default AlertContext
+```
+
+MAKING THE ALERT COMPONENT
+
+1) Go to the UserSearch.jsx. 
+2) Import the AlertContext. 
+3) Beneath the GithubContext hook, add the AlertContext hook;
+const {setAlert} = useContext(AlertContext)
+4) Now we’ll change the handleSubmit() function. Change the alert() method, with setAlert(). 
+5) Go to the layouts folder, create the Alert.jsx. 
+6) Inside the Alert.jsx, import useContext. 
+7) Import AlertContext.jsx
+8) Inside the Alert(), define the useContext hook: 
+const {alert} = useContext(AlertContext)
+9) Inside the return statement enter the jsx code shown below.
+10) Go to the App.js
+11) Import Alert.jsx
+12) Place the <Alert /> inside the main element, above the Routes. 
+
+UserSearch.jsx
+```
+import { useState, useContext } from 'react'
+import GithubContext from '../../context/github/GithubContext'
+import AlertContext from '../../context/alert/AlertContext'
+ 
+function UserSearch() {
+ 
+   const [text, setText] = useState('')
+ 
+   const { users, searchUsers, clearUsers } = useContext(GithubContext)
+   const { setAlert } = useContext(AlertContext)
+ 
+   function handleChange(e) {
+       setText(e.target.value)
+   }
+ 
+   function handleSubmit(e) {
+       e.preventDefault()
+ 
+       if (text === '') {
+           setAlert('Please enter something', 'error')
+       } else {
+           searchUsers(text)
+           setText('')
+       }
+   }
+ 
+   return (
+       <div className='grid grid-cols-1 xl:grid-cols-2 lg:grid-cols-2 md:grid-cols-2 mb-8 gap-8'>
+           <div>
+               <form onSubmit={handleSubmit}>
+                   <div className='form-control'>
+                       <div className='relative'>
+                           <input
+                               type='text'
+                               className='w-full pr-40 bg-gray-200 input input-lg text-black'
+                               placeholder='Search'
+                               value={text}
+                               onChange={handleChange}
+                           />
+                           <button
+                               type='submit'
+                               className='absolute top-0 right-0 rounded-l-none w-36 btn btn-lg'
+                           >
+                               Go
+                           </button>
+                       </div>
+                   </div>
+               </form>
+           </div>
+           {users.length > 0 && (
+               <div>
+                   < button onClick={clearUsers} className='btn btn-ghost btn-lg' >
+                       Clear
+                   </button >
+               </div>
+           )}
+       </div>
+   )
+}
+ 
+export default UserSearch
+
+```
+Alert.jxs
+```
+import { useContext } from 'react'
+import AlertContext from '../context/alert/AlertContext'
+ 
+function Alert() {
+ 
+   const { alert } = useContext(AlertContext)
+   return (
+       alert !== null && (
+           <p className='flex items-start mb-4 space-x-2'>
+               {alert.type === 'error' && (
+                   <svg
+                       className='w-6 h-6 flex-none mt-0.5'
+                       fill='none'
+                       viewBox='0 0 24 24'
+                   >
+                       <circle cx='12' cy='12' r='12' fill='#FECDD3'></circle>
+                       <path
+                           d='M8 8l8 8M16 8l-8 8'
+                           stroke='#B91C1C'
+                           strokeWidth='2'
+                       ></path>
+                   </svg>
+               )}
+               <p className='flex-1 text-base font-semibold leading-7 text-white'>
+                   <strong>{alert.msg}</strong>
+               </p>
+           </p>
+       )
+   )
+}
+ 
+export default Alert
+
+```
+App.js
+
+```
+import './index.css';
+import { BrowserRouter as Route, Routes } from 'react-router-dom'
+import Navbar from './components/layouts/Navbar'
+import Footer from './components/layouts/Footer'
+import Alert from './components/layouts/Alert';
+import Home from './pages/Home'
+import About from './pages/About'
+import NotFound from './pages/NotFound'
+import { GithubProvider } from './context/github/GithubContext'
+import { AlertProvider } from './context/alert/AlertContext'
+ 
+function App() {
+ return (
+   <GithubProvider>
+     <AlertProvider>
+       <div className='flex flex-col justify-between h-screen'>
+         <Navbar />
+ 
+         <main className='container mx-auto px-3 pb-12'>
+           <Alert />
+           <Routes>
+             <Route path='/' element={<Home />} />
+             <Route path='/about' element={<About />} />
+             <Route path='/notfound' element={<NotFound />} />
+             <Route path='*' element={<NotFound />} />
+           </Routes>
+         </main>
+         <Footer />
+       </div>
+     </AlertProvider>
+   </GithubProvider>
+ )
+}
+ 
+export default App;
+
+```
