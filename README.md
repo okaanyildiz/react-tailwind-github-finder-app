@@ -1441,3 +1441,278 @@ function App() {
 export default App;
 
 ```
+GETTING A SINGLE USER DATA
+
+1) When we click on a user, it goes on a single page with a unique address. 
+2) So we have to make a user page to display the data for each user. 
+3) Inside the pages folder. Create the User.jsx.
+4) Go to UserItem.jsx
+5)  Rearrange the Link: 
+to={/user/${login}
+6) Go to App.js. 
+7) Import User.jsx
+7) Make a new Route for the User. The path is going to be ‘/user:login’
+8) Go to GithubContext.js
+9) Inside the initialState, add user as an empty object. 
+10)  Inside the values of GithubContext.Provider add: 
+user: state.user 
+11)  Now we will make a function to get a user. 
+12) Copy the searchUser() function. 
+13) Then paste it under itself, change it to getUser() .
+14) The argument of the function will be “login”. 
+15) Delete the params const. We don’t need any params. 
+16) Modify the endpoint in the fetch() as:
+${GITHUB_URL}/users/${login}
+17) Under the response const, make an if statement. That conditional will check the response status. And if the response is 404 it will direct "/notfound". Else it will get the user by the help of dispatch() function. 
+18) Now go to the GithubReducer.js
+19) Add ‘GET_USER’ case: 
+```
+case 'GET_USER:
+           return {
+               ...state,
+               user: action.payload,
+               loading: false,
+           }
+```
+
+20) Add the getUser() function into the values of GithubContext.Provider. 
+21) Go to the User.jsx
+22) Import {useContext, useEffect} 
+23) Import GithubContext.js
+24) Inside the User({match}), make the useContext hook: 
+const {getUser, user} = useContext(GithubContext)
+26) Under the useContext hook, define the useEffect hook:
+
+``` 
+useEffect(() => {
+       getUser(match.params.login)
+   }, [])
+```
+27) Inside the return statement, use {user.login} in a div. 
+
+
+UserItem.jsx :
+```
+import { Link } from 'react-router-dom'
+import PropTypes from 'prop-types'
+ 
+function UserItem({ user: { login, avatar_url } }) {
+   return (
+       <div className='card shadow-md compact side bg-base-100'>
+           <div className='flex-row items-center space-x-4 card-body'>
+               <div>
+                   <div className='avatar'>
+                       <div className='rounded-full shadow w-14 h-14'>
+                           <img src={avatar_url} alt='Profile' />
+                       </div>
+                   </div>
+               </div>
+               <div>
+                   <h2 className='card-title'>{login}</h2>
+                   <Link
+                       className='text-base-content text-opacity-40'
+                       to={`/user/${login}`}
+                   >
+                       Visit Profile
+                   </Link>
+               </div>
+           </div>
+       </div>
+   )
+}
+ 
+UserItem.propTypes = {
+   user: PropTypes.object.isRequired,
+}
+ 
+export default UserItem
+
+```
+App.js :
+```
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import Navbar from './components/layout/Navbar'
+import Footer from './components/layout/Footer'
+import Alert from './components/layout/Alert'
+import Home from './pages/Home'
+import About from './pages/About'
+import NotFound from './pages/NotFound'
+import User from './pages/User'
+import { GithubProvider } from './components/context/github/GithubContext'
+import { AlertProvider } from './components/context/alert/AlertContext'
+ 
+function App() {
+ return (
+   <GithubProvider>
+     <AlertProvider>
+       <Router>
+         <div className="flex flex-col justify-between h-screen">
+           <Navbar />
+ 
+           <main>
+             <Alert />
+             <Routes>
+               <Route path='/' element={<Home />} />
+               <Route path='/about' element={<About />} />
+               <Route path='/notfound' element={<NotFound />} />
+               <Route path='*' element={<NotFound />} />
+               <Route path='/user/:login' element={<User />} />
+             </Routes>
+           </main>
+ 
+           <Footer />
+         </div>
+       </Router>
+     </AlertProvider>
+   </GithubProvider>
+ )
+}
+ 
+export default App
+```
+User.jsx :
+```
+import { useContext, useEffect } from 'react'
+import GithubContext from '../components/context/github/GithubContext'
+ 
+function User({ match }) {
+   const { getUser, user } = useContext(GithubContext)
+ 
+   useEffect(() => {
+       getUser(match.params.login)
+   }, [])
+ 
+   return <div>{user.login}</div>
+}
+ 
+export default User
+
+```
+GithubContext.js :
+
+```
+import { createContext, useReducer } from 'react'
+import GithubReducer from './GithubReducer'
+ 
+const GithubContext = createContext()
+ 
+const GITHUB_URL = process.env.REACT_APP_GITHUB_URL
+const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN
+ 
+export function GithubProvider({ children }) {
+   // Api data tracker
+   const initialState = {
+       user: {},
+       users: [],
+       loading: false,
+   }
+ 
+   const [state, dispatch] = useReducer(GithubReducer, initialState)
+ 
+   // Get search results
+   async function searchUsers(text) {
+       setLoading()
+ 
+       const params = new URLSearchParams({
+           q: text,
+       })
+ 
+       const response = await fetch(`${GITHUB_URL}/search/users?${params}`, {
+           headers: {
+               Authorization: `token ${GITHUB_TOKEN}`,
+           },
+       })
+       // Destructure the data, we need only items from the coming data.
+       const { items } = await response.json()
+ 
+       dispatch({
+           type: 'GET_USERS',
+           payload: items,
+       })
+   }
+ 
+   // Get user
+   async function getUser(login) {
+       setLoading()
+ 
+       const response = await fetch(`${GITHUB_URL}/users/${login}`, {
+           headers: {
+               Authorization: `token ${GITHUB_TOKEN}`,
+           },
+       })
+ 
+       if (response.status === 404) {
+           window.location = '/notfound'
+       } else {
+           const data = await response.json()
+ 
+           dispatch({
+               type: 'GET_USER',
+               payload: data,
+           })
+       }
+   }
+   // Clear users from the state
+   function clearUsers() {
+       dispatch({
+           type: 'CLEAR_USERS'
+       })
+   }
+ 
+   // Set loading
+   function setLoading() {
+       dispatch({ type: 'SET_LOADING' })
+   }
+ 
+   return (
+       <GithubContext.Provider
+           value={{
+               user: state.user,
+               users: state.users,
+               loading: state.loading,
+               searchUsers,
+               clearUsers,
+               getUser,
+           }}
+       >
+           {children}
+       </GithubContext.Provider>
+   )
+}
+ 
+export default GithubContext
+
+```
+GithubReducer.js
+```
+const githubReducer = (state, action) => {
+ 
+   switch (action.type) {
+       case 'GET_USERS':
+           return {
+               ...state,
+               users: action.payload,
+               loading: false,
+           }
+       case 'GET_USER':
+           return {
+               ...state,
+               user: action.payload,
+               loading: false,
+           }
+       case 'SET_LOADING':
+           return {
+               ...state,
+               loading: true,
+           }
+       case 'CLEAR_USERS':
+           return {
+               ...state,
+               users: [],
+           }
+       default:
+           return state
+   }
+}
+export default githubReducer
+
