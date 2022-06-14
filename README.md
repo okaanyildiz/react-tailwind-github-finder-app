@@ -1,3 +1,4 @@
+
 react-tailwind-github-finder-app
 
 Steps to take
@@ -455,7 +456,7 @@ SETTING UP GITHUB CONTEXT
 10) Copy the fetchUsers() function from UserResults() and paste it under the useState hooks in the provider function. Import axios into the GithubContext.js
 11) We can rearrange the fetchUser() function with GITHUB_URL and GITHUB_TOKEN consts. 
 12) At the bottom of the provider function, return GithubContext.Provider
-12) <GithubContext.Provider> will have the destructured “users” and “loading” and “fetchUsers” props. And it will contend with {children}. 
+12) GithubContext.Provider will have the destructured “users” and “loading” and “fetchUsers” props. And it will contend with {children}. 
 13) Eventually export default GithubContext. 
 14) Context has to wrap the components. 
 15) Go to App.js. Import GithubProvider() function from GithubContext.js
@@ -726,7 +727,7 @@ export default GithubContext
 
 ```
 
-GithubReducer.js :
+ GithubReducer.js :
 
 ```
 const githubReducer = (state, action) => {
@@ -754,7 +755,7 @@ export default githubReducer
 MAKING THE USERSEARCH COMPONENT
 
 1) Inside the users folder, create the UserSearch.jsx. 
-2) Go to Home.jsx and add the <UserSearch /> above the UserResults.
+2) Go to Home.jsx and add the UserSearch above the UserResults.
 3) Turn back to UserSearch.jsx. Add the Tailwind classes to the search div shown in the code below.
 4) Create a “form” element for the search. Inside the form element make an input, a submit button and a “clear” button. 
 5) Next, we’ll add the state for the input element. 
@@ -852,7 +853,6 @@ function Home() {
 export default Home
 
 ```
-
 SEARCHING THE USERS
 
 1) Go to the GithubContext.js
@@ -1298,7 +1298,7 @@ const {alert} = useContext(AlertContext)
 9) Inside the return statement enter the jsx code shown below.
 10) Go to the App.js
 11) Import Alert.jsx
-12) Place the <Alert /> inside the main element, above the Routes. 
+12) Place the Alert inside the main element, above the Routes. 
 
 UserSearch.jsx
 ```
@@ -1441,6 +1441,7 @@ function App() {
 export default App;
 
 ```
+
 GETTING A SINGLE USER DATA
 
 1) When we click on a user, it goes on a single page with a unique address. 
@@ -1448,7 +1449,7 @@ GETTING A SINGLE USER DATA
 3) Inside the pages folder. Create the User.jsx.
 4) Go to UserItem.jsx
 5)  Rearrange the Link: 
-to={/user/${login}
+to=/user/${login}
 6) Go to App.js. 
 7) Import User.jsx
 7) Make a new Route for the User. The path is going to be ‘/user:login’
@@ -1463,7 +1464,7 @@ user: state.user
 15) Delete the params const. We don’t need any params. 
 16) Modify the endpoint in the fetch() as:
 ${GITHUB_URL}/users/${login}
-17) Under the response const, make an if statement. That conditional will check the response status. And if the response is 404 it will direct "/notfound". Else it will get the user by the help of dispatch() function. 
+17) Under the response const, make an if statement. That conditional will check the response status. And if the response is 404 it will direct /notfound`. Else it will get the user by the help of dispatch() function. 
 18) Now go to the GithubReducer.js
 19) Add ‘GET_USER’ case: 
 ```
@@ -1716,7 +1717,6 @@ const githubReducer = (state, action) => {
 }
 export default githubReducer
 ```
-
 MAKING THE USER PROFILE
 
 1) Go to the User.jsx. Import some necessary icons: 
@@ -1922,7 +1922,6 @@ function User() {
 export default User
 
 ```
-
 GETTING USER REPOS
 
 1) Go to the GithubContext.js
@@ -2097,11 +2096,16 @@ const githubReducer = (state, action) => {
                users: action.payload,
                loading: false,
            }
-       case 'GET_USER_AND_REPOS':
+       case 'GET_USER':
            return {
                ...state,
-               user: action.payload.user,
-               repos: action.payload.repos,
+               user: action.payload,
+               loading: false,
+           }
+       case 'GET_REPOS':
+           return {
+               ...state,
+               repos: action.payload,
                loading: false,
            }
        case 'SET_LOADING':
@@ -2119,26 +2123,25 @@ const githubReducer = (state, action) => {
    }
 }
  
-export default githubReducer
+export default githubReducer 
 ```
 
 User.jsx : 
 ```
 import { FaCodepen, FaStore, FaUserFriends, FaUsers } from 'react-icons/fa'
 import { useEffect, useContext } from 'react'
-import { useParams } from 'react-router-dom'
 import { Link } from 'react-router-dom'
-import Spinner from '../components/layouts/Spinner'
+import GithubContext from '../components/context/github/GithubContext'
+import Spinner from '../components/layout/Spinner'
 import RepoList from '../components/repos/RepoList'
-import GithubContext from '../context/github/GithubContext'
  
-function User() {
-   const { getUser, user, loading, getUserRepos, repos } = useContext(GithubContext)
-   const params = useParams()
+function User({ match }) {
+   const { getUser, user, loading, getUserRepos, repos } =
+       useContext(GithubContext)
  
    useEffect(() => {
-       getUser(match.paraml.login)
-  getUserRepos(match.params.login)
+       getUser(match.params.login)
+       getUserRepos(match.params.login)
    }, [])
  
    const {
@@ -2179,7 +2182,7 @@ function User() {
                            </figure>
                            <div className='card-body justify-end'>
                                <h2 className='card-title mb-0'>{name}</h2>
-                               <p className='flex-grow-0'>{login}</p>
+                               <p>{login}</p>
                            </div>
                        </div>
                    </div>
@@ -2217,8 +2220,12 @@ function User() {
                                <div className='stat'>
                                    <div className='stat-title text-md'>Website</div>
                                    <div className='text-lg stat-value'>
-                                       <a href={websiteUrl} target='_blank' rel='noreferrer'>
-                                           {websiteUrl}
+                                       <a
+                                           href={`https://${blog}`}
+                                           target='_blank'
+                                           rel='noreferrer'
+                                       >
+                                           {blog}
                                        </a>
                                    </div>
                                </div>
@@ -2242,45 +2249,43 @@ function User() {
                </div>
  
                <div className='w-full py-5 mb-6 rounded-lg shadow-md bg-base-100 stats'>
-                   <div className='grid grid-cols-1 md:grid-cols-3'>
-                       <div className='stat'>
-                           <div className='stat-figure text-secondary'>
-                               <FaUsers className='text-3xl md:text-5xl' />
-                           </div>
-                           <div className='stat-title pr-5'>Followers</div>
-                           <div className='stat-value pr-5 text-3xl md:text-4xl'>
-                               {followers}
-                           </div>
+                   <div className='stat'>
+                       <div className='stat-figure text-secondary'>
+                           <FaUsers className='text-3xl md:text-5xl' />
                        </div>
- 
-                       <div className='stat'>
-                           <div className='stat-figure text-secondary'>
-                               <FaUserFriends className='text-3xl md:text-5xl' />
-                           </div>
-                           <div className='stat-title pr-5'>Following</div>
-                           <div className='stat-value pr-5 text-3xl md:text-4xl'>
-                               {following}
-                           </div>
+                       <div className='stat-title pr-5'>Followers</div>
+                       <div className='stat-value pr-5 text-3xl md:text-4xl'>
+                           {followers}
                        </div>
+                   </div>
  
-                       <div className='stat'>
-                           <div className='stat-figure text-secondary'>
-                               <FaCodepen className='text-3xl md:text-5xl' />
-                           </div>
-                           <div className='stat-title pr-5'>Public Repos</div>
-                           <div className='stat-value pr-5 text-3xl md:text-4xl'>
-                               {public_repos}
-                           </div>
+                   <div className='stat'>
+                       <div className='stat-figure text-secondary'>
+                           <FaUserFriends className='text-3xl md:text-5xl' />
                        </div>
+                       <div className='stat-title pr-5'>Following</div>
+                       <div className='stat-value pr-5 text-3xl md:text-4xl'>
+                           {following}
+                       </div>
+                   </div>
  
-                       <div className='stat'>
-                           <div className='stat-figure text-secondary'>
-                               <FaStore className='text-3xl md:text-5xl' />
-                           </div>
-                           <div className='stat-title pr-5'>Public Gists</div>
-                           <div className='stat-value pr-5 text-3xl md:text-4xl'>
-                               {public_gists}
-                           </div>
+                   <div className='stat'>
+                       <div className='stat-figure text-secondary'>
+                           <FaCodepen className='text-3xl md:text-5xl' />
+                       </div>
+                       <div className='stat-title pr-5'>Public Repos</div>
+                       <div className='stat-value pr-5 text-3xl md:text-4xl'>
+                           {public_repos}
+                       </div>
+                   </div>
+ 
+                   <div className='stat'>
+                       <div className='stat-figure text-secondary'>
+                           <FaStore className='text-3xl md:text-5xl' />
+                       </div>
+                       <div className='stat-title pr-5'>Public Gists</div>
+                       <div className='stat-value pr-5 text-3xl md:text-4xl'>
+                           {public_gists}
                        </div>
                    </div>
                </div>
@@ -2427,5 +2432,677 @@ RepoList.propTypes = {
 }
  
 export default RepoList
+
 ```
 
+REFACTORING-1: MOVING SEARCHUSERS TO ACTIONS FILE
+
+1) Go to the GithubContext.js. 
+2) Inside the GithubContext.Provider change all the values relevant to the state with a spread operator “...state”
+3) We only want to pass …state and dispatch() as the value of the GithubContext.Provider. 
+4) Add the dispatch as a value of the GithubContext.Provider. 
+5) Now we can get rid of the functions that are in the values of the GithubContext.Provider. 
+6) Inside the github folder, create the GithubAction.js. 
+7)  We need the Github tokens. Copy and paste them to the GithubAction.js from GithubContex.js
+8) Go to the GithubContext.js file and cut the searchUsers() function and paste it into the GithubAction.js
+9) Now arrange the searhUsers() function. 
+10) Delete the setLoading()
+11) Instead of dispatching we’ll return the data. To the bottom of the function add the “return items” statement. 
+12) Go to the UserSearch.jsx. 
+13) Import {searchUsers} from GithubActions.js
+14) Delete searchUsers from useContext hook. 
+15) Inside the handleSubmit() function make the searchUsers(text) a const which is called users. Remember to add “await” in front of the searchUsers, thus we have to change the handleSubmit function into an asynchronous function. 
+16) Just above the user const, use dispatch({type: ‘SET_LOADING’})
+17)  Beneath the users const, use the dispatch({type: ‘GET_USERS’, payload: users})
+18) Add “dispatch”  inside the useContext hook. 
+19) Delete searchUsers from the GithubContext.Provider. 
+
+
+
+GithubContext.js :
+
+```
+import { createContext, useReducer } from 'react'
+import githubReducer from './GithubReducer'
+ 
+const GithubContext = createContext()
+ 
+const GITHUB_URL = process.env.REACT_APP_GITHUB_URL
+const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN
+ 
+export function GithubProvider({ children }) {
+   // Api data tracker
+   const initialState = {
+       users: [],
+       user: {},
+       repos: [],
+       loading: false,
+   }
+ 
+   const [state, dispatch] = useReducer(githubReducer, initialState)
+ 
+   // Get single user
+   async function getUser(login) {
+       setLoading()
+ 
+       const response = await fetch(`${GITHUB_URL}/users/${login}`, {
+           headers: {
+               Authorization: `token ${GITHUB_TOKEN}`,
+           },
+       })
+ 
+       if (response.status === 404) {
+           window.location = '/notfound'
+       } else {
+           const data = await response.json()
+ 
+           dispatch({
+               type: 'GET_USER',
+               payload: data,
+           })
+       }
+   }
+ 
+   // Get user repos
+   async function getUserRepos(login) {
+       setLoading()
+ 
+       const params = new URLSearchParams({
+           sort: 'created',
+           per_page: 10,
+       })
+ 
+       const response = await fetch(
+           `${GITHUB_URL}/users/${login}/repos?${params}`,
+           {
+               headers: {
+                   Authorization: `token ${GITHUB_TOKEN}`,
+               },
+           }
+       )
+ 
+       const data = await response.json()
+ 
+       dispatch({
+           type: 'GET_REPOS',
+           payload: data,
+       })
+   }
+ 
+   // Clear users from state
+   function clearUsers() { dispatch({ type: 'CLEAR_USERS' }) }
+ 
+   // Set loading
+   function setLoading() { dispatch({ type: 'SET_LOADING' }) }
+ 
+   return (
+       <GithubContext.Provider
+           value={{
+               ...state,
+               clearUsers,
+               getUser,
+               getUserRepos,
+               dispatch
+           }}
+       >
+           {children}
+       </GithubContext.Provider>
+   )
+}
+ 
+export default GithubContext
+
+```
+
+GithubAction.js : 
+```
+
+const GITHUB_URL = process.env.REACT_APP_GITHUB_URL
+const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN
+ 
+// Get search results
+export async function searchUsers(text) {
+   const params = new URLSearchParams({
+       q: text,
+   })
+ 
+   const response = await fetch(`${GITHUB_URL}/search/users?${params}`, {
+       headers: {
+           Authorization: `token ${GITHUB_TOKEN}`,
+       },
+   })
+ 
+   const { items } = await response.json()
+ 
+   return items
+}
+```
+
+
+UserSearch.jsx :
+```
+import { useState, useContext } from 'react'
+import GithubContext from '../../context/github/GithubContext'
+import AlertContext from '../../context/alert/AlertContext'
+import { searchUsers } from '../../context/github/GithubAction'
+ 
+function UserSearch() {
+   const [text, setText] = useState('')
+ 
+   const { users, dispatch, clearUsers } = useContext(GithubContext)
+   const { setAlert } = useContext(AlertContext)
+ 
+   function handleChange(e) { setText(e.target.value) }
+ 
+   async function handleSubmit(e) {
+       e.preventDefault()
+ 
+       dispatch({ type: 'SET_LOADING' })
+       const users = await searchUsers(text)
+       dispatch({ type: 'GET_USERS', payload: users })
+ 
+       if (text === '') {
+           setAlert('Please enter something', 'error')
+       } else {
+           searchUsers(text)
+           setText('')
+       }
+   }
+ 
+   return (
+       <div className='grid grid-cols-1 xl:grid-cols-2 lg:grid-cols-2 md:grid-cols-2 mb-8 gap-8'>
+           <div>
+               <form onSubmit={handleSubmit}>
+                   <div className='form-control'>
+                       <div className='relative'>
+                           <input
+                               type='text'
+                               className='w-full pr-40 bg-gray-200 input input-lg text-black'
+                               placeholder='Search'
+                               value={text}
+                               onChange={handleChange}
+                           />
+                           <button
+                               type='submit'
+                               className='absolute top-0 right-0 rounded-l-none w-36 btn btn-lg'
+                           >
+                               Go
+                           </button>
+                       </div>
+                   </div>
+               </form>
+           </div>
+           {users.length > 0 && (
+               <div>
+                   <button onClick={clearUsers} className='btn btn-ghost btn-lg'>
+                       Clear
+                   </button>
+               </div>
+           )}
+       </div>
+   )
+}
+ 
+export default UserSearch
+```
+
+REFACTORING-2: MOVING GETUSER TO ACTIONS FILE
+
+1) From the GithubContext.js cut the getUserRepos()  and getUser() function and paste into the GithubActions.js
+2) Export these two functions. 
+3) In both functions delete setLoading() from getUser(). Instead of dispatching just return the data. 
+4)  Go to the GithubContext.js. 
+5) Delete getUser and getUserRepos and clearUsers from GithubContext.Provider
+6) Delete the setLoading() and clearUsers() functions.  
+7) Delete the Github tokens. 
+8) Go to the UserSearch.jsx
+9) Delete the clearUsers from the useContext hook. 
+10) Instead of calling clearUsers() from the button directy, call dispatch() with the ‘CLEAR_USERS’ type with a callback function. 
+
+11) Now go to the User.jsx
+12) Import {getUser, getUserRepos} from GithubActions. 
+13) Delete getUser and getUserRepos from the useContext hook. 
+14) Clear inside the useEffect hook. 
+15) Add the dispatch with the type ‘SET_LOADING’ into useEffect. Then remember to add the dispatch in the useContext hook. 
+
+16) Again inside the useEffect hook, add the async getUserData() function. And call that function. 
+17) Inside the getUserData make the userData const:
+const userData = await getUser(params.login)
+18) Than add the dispatch({type: ‘GET_USER’, payload: userData})
+19)  Under the getUserData make the userRepoData const:
+const userRepoData = await getUserRepos(params.login)
+18) Than add the dispatch({type: ‘GET_REPOS’, payload: userRepoData})
+
+
+GithubContext.js :
+```
+
+import { createContext, useReducer } from 'react'
+import githubReducer from './GithubReducer'
+ 
+const GithubContext = createContext()
+ 
+export function GithubProvider({ children }) {
+   // Api data tracker
+   const initialState = {
+       users: [],
+       user: {},
+       repos: [],
+       loading: false,
+   }
+ 
+   const [state, dispatch] = useReducer(githubReducer, initialState)
+ 
+   return (
+       <GithubContext.Provider
+           value={{
+               ...state,
+               dispatch
+           }}
+       >
+           {children}
+       </GithubContext.Provider>
+   )
+}
+ 
+export default GithubContext
+```
+
+GithubActions.js : 
+```
+const GITHUB_URL = process.env.REACT_APP_GITHUB_URL
+const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN
+ 
+// Get search results
+export async function searchUsers(text) {
+   const params = new URLSearchParams({
+       q: text,
+   })
+ 
+   const response = await fetch(`${GITHUB_URL}/search/users?${params}`, {
+       headers: {
+           Authorization: `token ${GITHUB_TOKEN}`,
+       },
+   })
+ 
+   const { items } = await response.json()
+ 
+   return items
+}
+ 
+// Get single user
+export async function getUser(login) {
+ 
+   const response = await fetch(`${GITHUB_URL}/users/${login}`, {
+       headers: {
+           Authorization: `token ${GITHUB_TOKEN}`,
+       },
+   })
+ 
+   if (response.status === 404) {
+       window.location = '/notfound'
+   } else {
+       const data = await response.json()
+ 
+       return data
+   }
+}
+ 
+// Get user repos
+export async function getUserRepos(login) {
+ 
+   const params = new URLSearchParams({
+       sort: 'created',
+       per_page: 10,
+   })
+ 
+   const response = await fetch(
+       `${GITHUB_URL}/users/${login}/repos?${params}`,
+       {
+           headers: {
+               Authorization: `token ${GITHUB_TOKEN}`,
+           },
+       }
+   )
+ 
+   const data = await response.json()
+ 
+   return data
+}
+```
+
+
+UserSearch.jsx : 
+
+```
+import { useState, useContext } from 'react'
+import GithubContext from '../../context/github/GithubContext'
+import AlertContext from '../../context/alert/AlertContext'
+import { searchUsers } from '../../context/github/GithubAction'
+ 
+function UserSearch() {
+   const [text, setText] = useState('')
+ 
+   const { users, dispatch } = useContext(GithubContext)
+   const { setAlert } = useContext(AlertContext)
+ 
+   function handleChange(e) { setText(e.target.value) }
+ 
+   async function handleSubmit(e) {
+       e.preventDefault()
+ 
+       dispatch({ type: 'SET_LOADING' })
+       const users = await searchUsers(text)
+       dispatch({ type: 'GET_USERS', payload: users })
+ 
+       if (text === '') {
+           setAlert('Please enter something', 'error')
+       } else {
+           searchUsers(text)
+           setText('')
+       }
+   }
+ 
+   return (
+       <div className='grid grid-cols-1 xl:grid-cols-2 lg:grid-cols-2 md:grid-cols-2 mb-8 gap-8'>
+           <div>
+               <form onSubmit={handleSubmit}>
+                   <div className='form-control'>
+                       <div className='relative'>
+                           <input
+                               type='text'
+                               className='w-full pr-40 bg-gray-200 input input-lg text-black'
+                               placeholder='Search'
+                               value={text}
+                               onChange={handleChange}
+                           />
+                           <button
+                               type='submit'
+                               className='absolute top-0 right-0 rounded-l-none w-36 btn btn-lg'
+                           >
+                               Go
+                           </button>
+                       </div>
+                   </div>
+               </form>
+           </div>
+           {users.length > 0 && (
+               <div>
+                   <button onClick={() => dispatch({ type: 'CLEAR_USERS' })} className='btn btn-ghost btn-lg'>
+                       Clear
+                   </button>
+               </div>
+           )}
+       </div>
+   )
+}
+ 
+export default UserSearch
+```
+
+
+User.jsx :
+
+```
+
+import { FaCodepen, FaStore, FaUserFriends, FaUsers } from 'react-icons/fa'
+import { useEffect, useContext } from 'react'
+import { useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import Spinner from '../components/layout/Spinner'
+import RepoList from '../components/repos/RepoList'
+import GithubContext from '../context/github/GithubContext'
+import { getUser, getUserRepos } from '../context/github/GithubAction'
+ 
+function User() {
+   const { user, loading, repos, dispatch } =
+       useContext(GithubContext)
+ 
+   const params = useParams()
+ 
+   useEffect(() => {
+       dispatch({ type: 'SET_LOADING' })
+       async function getUserData() {
+           const userData = await getUser(params.login)
+           dispatch({ type: `GET_USER`, payload: userData })
+ 
+           const userRepoData = await getUserRepos(params.login)
+           dispatch({ type: `GET_REPOS`, payload: userRepoData })
+       }
+       getUserData()
+   }, [])
+ 
+   const {
+       name,
+       type,
+       avatar_url,
+       location,
+       bio,
+       blog,
+       twitter_username,
+       login,
+       html_url,
+       followers,
+       following,
+       public_repos,
+       public_gists,
+       hireable,
+   } = user
+ 
+   if (loading) {
+       return <Spinner />
+   }
+ 
+   return (
+       <>
+           <div className='w-full mx-auto lg:w-10/12'>
+               <div className='mb-4'>
+                   <Link to='/' className='btn btn-ghost'>
+                       Back To Search
+                   </Link>
+               </div>
+ 
+               <div className='grid grid-cols-1 xl:grid-cols-3 lg:grid-cols-3 md:grid-cols-3 mb-8 md:gap-8'>
+                   <div className='custom-card-image mb-6 md:mb-0'>
+                       <div className='rounded-lg shadow-xl card image-full'>
+                           <figure>
+                               <img src={avatar_url} alt='' />
+                           </figure>
+                           <div className='card-body justify-end'>
+                               <h2 className='card-title mb-0'>{name}</h2>
+                               <p>{login}</p>
+                           </div>
+                       </div>
+                   </div>
+ 
+                   <div className='col-span-2'>
+                       <div className='mb-6'>
+                           <h1 className='text-3xl card-title'>
+                               {name}
+                               <div className='ml-2 mr-1 badge badge-success'>{type}</div>
+                               {hireable && (
+                                   <div className='mx-1 badge badge-info'>Hireable</div>
+                               )}
+                           </h1>
+                           <p>{bio}</p>
+                           <div className='mt-4 card-actions'>
+                               <a
+                                   href={html_url}
+                                   target='_blank'
+                                   rel='noreferrer'
+                                   className='btn btn-outline'
+                               >
+                                   Visit Github Profile
+                               </a>
+                           </div>
+                       </div>
+ 
+                       <div className='w-full rounded-lg shadow-md bg-base-100 stats'>
+                           {location && (
+                               <div className='stat'>
+                                   <div className='stat-title text-md'>Location</div>
+                                   <div className='text-lg stat-value'>{location}</div>
+                               </div>
+                           )}
+                           {blog && (
+                               <div className='stat'>
+                                   <div className='stat-title text-md'>Website</div>
+                                   <div className='text-lg stat-value'>
+                                       <a
+                                           href={`https://${blog}`}
+                                           target='_blank'
+                                           rel='noreferrer'
+                                       >
+                                           {blog}
+                                       </a>
+                                   </div>
+                               </div>
+                           )}
+                           {twitter_username && (
+                               <div className='stat'>
+                                   <div className='stat-title text-md'>Twitter</div>
+                                   <div className='text-lg stat-value'>
+                                       <a
+                                           href={`https://twitter.com/${twitter_username}`}
+                                           target='_blank'
+                                           rel='noreferrer'
+                                       >
+                                           {twitter_username}
+                                       </a>
+                                   </div>
+                               </div>
+                           )}
+                       </div>
+                   </div>
+               </div>
+ 
+               <div className='w-full py-5 mb-6 rounded-lg shadow-md bg-base-100 stats'>
+                   <div className='stat'>
+                       <div className='stat-figure text-secondary'>
+                           <FaUsers className='text-3xl md:text-5xl' />
+                       </div>
+                       <div className='stat-title pr-5'>Followers</div>
+                       <div className='stat-value pr-5 text-3xl md:text-4xl'>
+                           {followers}
+                       </div>
+                   </div>
+ 
+                   <div className='stat'>
+                       <div className='stat-figure text-secondary'>
+                           <FaUserFriends className='text-3xl md:text-5xl' />
+                       </div>
+                       <div className='stat-title pr-5'>Following</div>
+                       <div className='stat-value pr-5 text-3xl md:text-4xl'>
+                           {following}
+                       </div>
+                   </div>
+ 
+                   <div className='stat'>
+                       <div className='stat-figure text-secondary'>
+                           <FaCodepen className='text-3xl md:text-5xl' />
+                       </div>
+                       <div className='stat-title pr-5'>Public Repos</div>
+                       <div className='stat-value pr-5 text-3xl md:text-4xl'>
+                           {public_repos}
+                       </div>
+                   </div>
+ 
+                   <div className='stat'>
+                       <div className='stat-figure text-secondary'>
+                           <FaStore className='text-3xl md:text-5xl' />
+                       </div>
+                       <div className='stat-title pr-5'>Public Gists</div>
+                       <div className='stat-value pr-5 text-3xl md:text-4xl'>
+                           {public_gists}
+                       </div>
+                   </div>
+               </div>
+ 
+               <RepoList repos={repos} />
+           </div>
+       </>
+   )
+}
+ 
+export default User
+```
+
+REFACTORING-3: CLEANING UP GITHUBACTIONS WITH AXIOS
+
+1) Install and import Axios into GithubActions.js
+2) Create an instance with Axios to make all type of requests we want to make.
+3) Edit the response const in the searchUsers with axios: 
+4) Than return response.data.items
+5) Instead of getUser and getUserRepos we’re going to make a new function that includes both.
+6)  Now go to the User.jsx
+7)  Change the getUserData() inside the useEffect.
+8) Change the getUser imports. 
+9) Go to the GithubReducer.js and merge the getuser and get repos.
+
+GithubAction.js :
+```
+import axios from 'axios'
+const GITHUB_URL = process.env.REACT_APP_GITHUB_URL
+const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN
+ 
+const github = axios.create({
+   baseURL: GITHUB_URL,
+   headers: { Authorization: `token ${GITHUB_TOKEN}` },
+})
+ 
+// Get search results
+export async function searchUsers(text) {
+   const params = new URLSearchParams({
+       q: text,
+   })
+ 
+   const response = await github.get(`/search/users?${params}`)
+   return response.data.items
+}
+ 
+// Get user and repos
+export async function getUserAndRepos(login) {
+   const [user, repos] = await Promise.all([
+       github.get(`/users/${login}`),
+       github.get(`/users/${login}/repos`),
+   ])
+ 
+   return { user: user.data, repos: repos.data }
+}
+```
+
+GithubReducer.js : 
+
+```
+const githubReducer = (state, action) => {
+   switch (action.type) {
+       case 'GET_USERS':
+           return {
+               ...state,
+               users: action.payload,
+               loading: false,
+           }
+       case 'GET_USER_AND_REPOS':
+           return {
+               ...state,
+               user: action.payload.user,
+               repos: action.payload.repos,
+               loading: false,
+           }
+       case 'SET_LOADING':
+           return {
+               ...state,
+               loading: true,
+           }
+       case 'CLEAR_USERS':
+           return {
+               ...state,
+               users: [],
+           }
+       default:
+           return state
+   }
+}
+ 
+export default githubReducer 
+```
