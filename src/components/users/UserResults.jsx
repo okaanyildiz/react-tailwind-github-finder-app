@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 import Spinner from '../layout/Spinner'
-import UserItem from './UserItem'
-import GithubContext from '../context/github/GithubContext'
+import UserItem from '../users/UserItem'
+import GithubContext from '../../context/github/GithubContext'
 
 function UserResults() {
     // Api data tracker
@@ -18,9 +18,7 @@ function UserResults() {
             </div>
         )
     } else {
-        return (
-            <Spinner />
-        )
+        return <Spinner />
     }
 }
 

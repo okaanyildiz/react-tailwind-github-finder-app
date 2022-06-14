@@ -10,7 +10,6 @@ function Spinner() {
                 alt='Loading...'
             />
         </div>
-
     )
 }
 
