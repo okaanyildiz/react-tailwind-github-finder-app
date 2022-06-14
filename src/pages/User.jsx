@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom'
 import { FaCodepen, FaStore, FaUserFriends, FaUsers } from 'react-icons/fa'
 import GithubContext from '../components/context/github/GithubContext'
 import Spinner from '../components/layout/Spinner'
+import RepoList from '../components/repos/RepoList'
 
 function User({ match }) {
-    const { getUser, user } = useContext(GithubContext)
+    const { getUser, user, getUserRepos, repos } = useContext(GithubContext)
 
     useEffect(() => {
         getUser(match.params.login)

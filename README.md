@@ -1922,3 +1922,403 @@ function User() {
 export default User
 
 ```
+
+GETTING USER REPOS
+
+1) Go to the GithubContext.js
+2) Add into initialState, repos as an empty array. 
+3)  Inside the values of GithubContext.Provider, add: 
+repos: state.repos. 
+4) Copy the searchResults() function and make the getUserRepos(). 
+5) It will take the “login” argument. 
+6) Delete the params const. 
+7) Change the url in fetch() method:
+${GITHUB_URL}/search/users/${login}/repos
+8) Change {items} to data, because we’re getting the data not the items.
+9) Change the dispatch()  function. Type will be ‘GET_REPOS’ and the payload will be “data”. 
+10)  Pass down the getUserRepos into GithubContext.Provider
+
+11) Go to the GithubReducer.js. 
+12) Update the ‘GET_USER’ case: 
+```
+case 'GET_USER_AND_REPOS':
+           return {
+               ...state,
+               user: action.payload.user,
+               repos: action.payload.repos,
+               loading: false,
+
+```
+13) Inside the components folder, create the repos folder. 
+14) Inside the repos folder create the RepoList.jsx
+15) Go to the User.jsx
+16) Import RepoLIst.jsx
+17) Add getUserRepos and “repos” to the useContext hook. 
+18) RepoList inside the User.jsx has the “repos” prop.
+19) Got to the RepoList.jsx
+20) In RepoList() add the {repos} as the argument with destructuring. 
+21) Import PropTypes. 
+22) Under the RepoList(), define the propTypes of repos as a required array. 
+23) Add the jsx below in the code inside the return statement. 
+24) Now we can display the repositories of the user in an alphabetic order. 
+
+25) Go to GithubContext.js
+26) To get the latest repos add a new const “params” inside the getUserRepos(): 
+```
+const params = new URLSearchParams({
+           sort: 'created',
+           per_page: 10,
+         })
+
+```
+27) Update the fetch() method: 
+${GITHUB_URL}/search/users?${params}
+
+
+GithubContext.js :
+
+```
+import { createContext, useReducer } from 'react'
+import githubReducer from './GithubReducer'
+ 
+const GithubContext = createContext()
+ 
+const GITHUB_URL = process.env.REACT_APP_GITHUB_URL
+const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN
+ 
+// Context provider function
+export const GithubProvider = ({ children }) => {
+   // Api data tracker
+   const initialState = {
+       users: [],
+       user: {},
+       repos: [],
+       loading: false
+   }
+   const [state, dispatch] = useReducer(githubReducer, initialState)
+ 
+   // Get search results
+   export const searchUsers = async (text) => {
+       setLoading()
+       const params = new URLSearchParams({
+           q: text,
+       })
+ 
+       const response = await fetch(`${GITHUB_URL}/search/users?/${params}`, {
+           headers: {
+               Authorization: `token ${GITHUB_TOKEN}`
+           },
+       })
+       const { items } = await response.json()
+ 
+       dispatch({
+           type: 'GET_USERS',
+           payload: items
+       })
+   }
+ 
+   // Get search results
+   async function getUserRepos(login) {
+       setLoading()
+ 
+       const params = new URLSearchParams({
+           sort: 'created',
+           Per_page: 10
+       })
+ 
+       const response = await fetch(`${GITHUB_URL}/users/${login}/repos?${params}`, {
+           headers: {
+               Authorization: `token ${GITHUB_TOKEN}`
+           }
+       })
+       const data = await response.json()
+ 
+       dispatch({
+           type: 'GET_REPOS',
+           payload: data
+       })
+       // Get a single user
+       async function getUser(login) {
+           setLoading()
+ 
+           const response = await fetch(`${GITHUB_URL}/users/${login}`, {
+               headers: {
+                   Authorization: `token ${GITHUB_TOKEN}`
+               }
+           })
+           if (response.status === 404) {
+               window.location = '/notfound'
+           } else {
+               const data = await response.json()
+ 
+               dispatch({
+                   type: 'GET_USERS',
+                   payload: items
+               })
+           }
+ 
+           // Clear users from the state
+           function clearUsers() {
+               dispatch({ type: 'CLEAR_USERS' })
+           }
+ 
+           // Set Loading
+           function setLoading() {
+               dispatch({ type: 'SET_LOADING' })
+           }
+ 
+           return <GithubContext.Provider
+               value={{
+                   users: state.users,
+                   loading: state.loading,
+                   user: state.user,
+                   repos: state.repos,
+                   searchUsers,
+                   clearUsers,
+                   getUser,
+                   getUserRepos
+               }}>
+               {children}
+           </GithubContext.Provider>
+       }
+   }
+}
+export default GithubContext
+ 
+```
+
+GithubReducer.js: 
+```
+const githubReducer = (state, action) => {
+   switch (action.type) {
+       case 'GET_USERS':
+           return {
+               ...state,
+               users: action.payload,
+               loading: false,
+           }
+       case 'GET_USER_AND_REPOS':
+           return {
+               ...state,
+               user: action.payload.user,
+               repos: action.payload.repos,
+               loading: false,
+           }
+       case 'SET_LOADING':
+           return {
+               ...state,
+               loading: true,
+           }
+       case 'CLEAR_USERS':
+           return {
+               ...state,
+               users: [],
+           }
+       default:
+           return state
+   }
+}
+ 
+export default githubReducer
+```
+
+User.jsx : 
+```
+import { FaCodepen, FaStore, FaUserFriends, FaUsers } from 'react-icons/fa'
+import { useEffect, useContext } from 'react'
+import { useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import Spinner from '../components/layouts/Spinner'
+import RepoList from '../components/repos/RepoList'
+import GithubContext from '../context/github/GithubContext'
+ 
+function User() {
+   const { getUser, user, loading, getUserRepos, repos } = useContext(GithubContext)
+   const params = useParams()
+ 
+   useEffect(() => {
+       getUser(match.paraml.login)
+  getUserRepos(match.params.login)
+   }, [])
+ 
+   const {
+       name,
+       type,
+       avatar_url,
+       location,
+       bio,
+       blog,
+       twitter_username,
+       login,
+       html_url,
+       followers,
+       following,
+       public_repos,
+       public_gists,
+       hireable,
+   } = user
+ 
+   if (loading) {
+       return <Spinner />
+   }
+ 
+   return (
+       <>
+           <div className='w-full mx-auto lg:w-10/12'>
+               <div className='mb-4'>
+                   <Link to='/' className='btn btn-ghost'>
+                       Back To Search
+                   </Link>
+               </div>
+ 
+               <div className='grid grid-cols-1 xl:grid-cols-3 lg:grid-cols-3 md:grid-cols-3 mb-8 md:gap-8'>
+                   <div className='custom-card-image mb-6 md:mb-0'>
+                       <div className='rounded-lg shadow-xl card image-full'>
+                           <figure>
+                               <img src={avatar_url} alt='' />
+                           </figure>
+                           <div className='card-body justify-end'>
+                               <h2 className='card-title mb-0'>{name}</h2>
+                               <p className='flex-grow-0'>{login}</p>
+                           </div>
+                       </div>
+                   </div>
+ 
+                   <div className='col-span-2'>
+                       <div className='mb-6'>
+                           <h1 className='text-3xl card-title'>
+                               {name}
+                               <div className='ml-2 mr-1 badge badge-success'>{type}</div>
+                               {hireable && (
+                                   <div className='mx-1 badge badge-info'>Hireable</div>
+                               )}
+                           </h1>
+                           <p>{bio}</p>
+                           <div className='mt-4 card-actions'>
+                               <a
+                                   href={html_url}
+                                   target='_blank'
+                                   rel='noreferrer'
+                                   className='btn btn-outline'
+                               >
+                                   Visit Github Profile
+                               </a>
+                           </div>
+                       </div>
+ 
+                       <div className='w-full rounded-lg shadow-md bg-base-100 stats'>
+                           {location && (
+                               <div className='stat'>
+                                   <div className='stat-title text-md'>Location</div>
+                                   <div className='text-lg stat-value'>{location}</div>
+                               </div>
+                           )}
+                           {blog && (
+                               <div className='stat'>
+                                   <div className='stat-title text-md'>Website</div>
+                                   <div className='text-lg stat-value'>
+                                       <a href={websiteUrl} target='_blank' rel='noreferrer'>
+                                           {websiteUrl}
+                                       </a>
+                                   </div>
+                               </div>
+                           )}
+                           {twitter_username && (
+                               <div className='stat'>
+                                   <div className='stat-title text-md'>Twitter</div>
+                                   <div className='text-lg stat-value'>
+                                       <a
+                                           href={`https://twitter.com/${twitter_username}`}
+                                           target='_blank'
+                                           rel='noreferrer'
+                                       >
+                                           {twitter_username}
+                                       </a>
+                                   </div>
+                               </div>
+                           )}
+                       </div>
+                   </div>
+               </div>
+ 
+               <div className='w-full py-5 mb-6 rounded-lg shadow-md bg-base-100 stats'>
+                   <div className='grid grid-cols-1 md:grid-cols-3'>
+                       <div className='stat'>
+                           <div className='stat-figure text-secondary'>
+                               <FaUsers className='text-3xl md:text-5xl' />
+                           </div>
+                           <div className='stat-title pr-5'>Followers</div>
+                           <div className='stat-value pr-5 text-3xl md:text-4xl'>
+                               {followers}
+                           </div>
+                       </div>
+ 
+                       <div className='stat'>
+                           <div className='stat-figure text-secondary'>
+                               <FaUserFriends className='text-3xl md:text-5xl' />
+                           </div>
+                           <div className='stat-title pr-5'>Following</div>
+                           <div className='stat-value pr-5 text-3xl md:text-4xl'>
+                               {following}
+                           </div>
+                       </div>
+ 
+                       <div className='stat'>
+                           <div className='stat-figure text-secondary'>
+                               <FaCodepen className='text-3xl md:text-5xl' />
+                           </div>
+                           <div className='stat-title pr-5'>Public Repos</div>
+                           <div className='stat-value pr-5 text-3xl md:text-4xl'>
+                               {public_repos}
+                           </div>
+                       </div>
+ 
+                       <div className='stat'>
+                           <div className='stat-figure text-secondary'>
+                               <FaStore className='text-3xl md:text-5xl' />
+                           </div>
+                           <div className='stat-title pr-5'>Public Gists</div>
+                           <div className='stat-value pr-5 text-3xl md:text-4xl'>
+                               {public_gists}
+                           </div>
+                       </div>
+                   </div>
+               </div>
+ 
+               <RepoList repos={repos} />
+           </div>
+       </>
+   )
+}
+ 
+export default User
+```
+
+RepoList.jsx : 
+
+```
+import PropTypes from 'prop-types'
+ 
+function RepoList({ repos }) {
+   return (
+       <div className='rounded-lg shadow-lg card bg-base-100'>
+           <div className='card-body'>
+               <h2 className='text-3xl my-4 font-bold card-title'>
+                   Latest Respositories
+               </h2>
+               {repos.map((repo) => (
+                   <RepoItem key={repo.id} repo={repo} />
+               ))}
+           </div>
+       </div>
+   )
+}
+ 
+RepoList.propTypes = {
+   repos: PropTypes.array.isRequired
+}
+ 
+export default RepoList
+
+```
+
