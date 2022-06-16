@@ -1,4 +1,3 @@
-
 react-tailwind-github-finder-app
 
 Steps to take
@@ -41,29 +40,31 @@ MAKING THE NAVBAR COMPONENT
 7) Import Navbar.jsx
 7) Place the Navbar inside App().
 8) Under the div, place the ‘main’ element, with a content of ‘Content’.
-8) Go to the Navbar.jsx.
-9) Import into Navbar.jsx:
+9) import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+10) Wrap all the content with the “Router” in App().
+11) Go to the Navbar.jsx.
+12) Import into Navbar.jsx:
 ```
 import { FaGithub } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 ```
-10) Pass {title} with destructuring as the argument of Navbar(). 
-11) Then define the default props. 
+13) Pass {title} with destructuring as the argument of Navbar(). 
+14) Then define the default props. 
 ```
 Navbar.defaultProps = {
    title: 'Github Finder'
 }
 
 ```
-12) Define the prop types. 
+15) Define the prop types. 
 ```
 Navbar.propTypes = {
    title: PropTypes.string,
 }
 ```
 
-13) Inside the Navbar(), type the code shown below:
+16) Inside the Navbar(), type the code below:
 
 Navbar.jsx : 
 ```
@@ -108,16 +109,37 @@ Navbar.propTypes = {
 export default Navbar
 
 ```
+App.js :
+```
+import Navbar from './components/layout/Navbar'
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+ 
+function App() {
+ return (
+   <Router>
+     <Navbar />
+ 
+     <main>
+       Content
+     </main>
+   </Router>
+ )
+}
+ 
+export default App
+
+```
 
 
 MAKING THE FOOTER COMPONENT
 
 1) Inside the components/layouts folder create Footer.jsx
-2) Above the return statement of Footer(), add the footerYear const, which shows the updated date.
-3) Make your footer element. 
+2) Inside Footer(), add the footerYear const, which shows the updated date.
+3) Make the Footer element. 
 4) In the footer add that svg in the code below. 
 5) Add footerYear const with curly braces in the copyright section.
 6) Add the footer to the App.js
+7) Wrap Navbar, Main and the Footer with the Tailwind div. Add the main element the Tailwind classes. 
 
 ```
 function Footer() {
@@ -146,6 +168,31 @@ function Footer() {
 export default Footer
 
 ```
+App.js : 
+
+```
+import Navbar from './components/layout/Navbar'
+import Footer from './components/layout/Footer'
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+ 
+function App() {
+ return (
+   <Router>
+     <div className='flex flex-col justify-between h-screen'>
+       <Navbar />
+ 
+       <main className='container mx-auto px-3 pb-12'>
+         Content
+       </main>
+ 
+       <Footer />
+     </div>
+   </Router>
+ )
+}
+ 
+export default App
+```
 
 MAKING THE PAGES AND ROUTES
 
@@ -168,15 +215,15 @@ import NotFound from './pages/NotFound'
 function App() {
  return (
    <Router>
-     <div className="flex flex-col justify-between h-screen">
+     <div className='flex flex-col justify-between h-screen'>
        <Navbar />
  
-       <main>
+       <main className='container mx-auto px-3 pb-12'>
          <Routes>
            <Route path='/' element={<Home />} />
            <Route path='/about' element={<About />} />
            <Route path='/notfound' element={<NotFound />} />
-         </Routes>
+           <Route path='*' element={<NotFound />} />          </Routes>
        </main>
  
        <Footer />
@@ -235,6 +282,7 @@ export default NotFound
 
 ```
 
+
 GETTING TOKEN FROM THE GITHUB API
 
 1) The App we will show the user Github Profiles. We can get example data via the Postman searching for https://api.github.com/users/[user]. 
@@ -255,9 +303,9 @@ MAKING THE USERRESULTS COMPONENT
 1) Inside the components folder make the “users” folder. 
 2) In that folder create the UserResults.jsx file. 
 3) Go to the Home.jsx. Import UserResults(). 
-4) Add the <UserResults /> inside the div. 
-5) Install-Import “axios”, “useEffect” “useState” into the UserResults.jsx. 
-6) Inside the UserResults(), make the asynchronous function fetchUsers() to fetch the users from Github Api. Assign the data to the response const. And console.log “response.data” to reach the users array.
+4) Add the UserResults inside the div. 
+5) Import “useEffect” “useState” into the UserResults.jsx. 
+6) Inside the UserResults(), make the asynchronous function fetchUsers() to fetch the users from Github Api. Assign the data to the response const. And console.log “data” to reach the users array.
 7) You can see an array of 30 users inside the response in the console. 
 8) Make the useEffect hook.
 9) Call the fetchUsers() inside useEffect.
@@ -272,41 +320,39 @@ const [loading, setLoading] = useState(true)
 13) In the div of the return statement add the tailwind classes in the code below. 
 14) In that div we will map through the users. 
 15) With map() method, map the users  and show the data in an h3 element. To reach the users we have to map “login”. 
-16) Now you can display the users in the home page.
-17) If we wait for the data we will show a “Loading…” warning. So we will add an if statement for conditional rendering. 
-18) Wrap the return statement with an if conditional. If the data doesn’t show up, display an h3 element with a “Loading…” content. 
+16) Add UserResults to the Home page.
+17) Now you can display the users list in the home page.
+18) If we wait for the data we will show a “Loading…” warning. So we will add an if statement for conditional rendering. 
+19) Wrap the return statement with an if conditional. If the data doesn’t show up, display an h3 element with a “Loading…” content. 
+
 UserResults.jsx :
 
 ```
-import axios from 'axios'
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
  
 function UserResults() {
  
-   // Api data trackers
    const [users, setUsers] = useState([])
    const [loading, setLoading] = useState(true)
  
    useEffect(() => {
        fetchUsers()
-   }, [])
+   })
  
-   // Fetch users from the api
    async function fetchUsers() {
-       const response = await axios.get(`${process.env.REACT_APP_GITHUB_URL}/users`, {
+       const response = await fetch(`${process.env.REACT_APP_GITHUB_URL}/users`, {
            headers: {
                Authorization: `token ${process.env.REACT_APP_GITHUB_TOKEN}`
            }
        })
-       // Add .data to reach the users array
-       setUsers(response.data)
+       const data = await response.json()
+       setUsers(data)
        setLoading(false)
    }
-   // Add a conditional rendering in case of a delay
+ 
    if (!loading) {
        return (
            <div className='grid grid-cols-1 gap-8 xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2'>
-               // List the users
                {users.map((user) => (
                    <h3>{user.login}</h3>
                ))}
@@ -323,13 +369,28 @@ export default UserResults
 
 ```
 
+Home.jsx :
+```
+import UserResults from "../components/users/UserResults"
+ 
+function Home() {
+   return (
+       <div>
+           <UserResults />
+       </div>
+   )
+}
+ 
+export default Home
+```
+
 ADDING THE LOADING SPINNER
 
 1) Inside the layouts folder, create the “assets” folder. 
 2) Add a spinner gif inside the assets folder. 
 3) Inside the layouts folder create Spinner.jsx
 4) Import the spinner gif into the Spinner.jsx
-5) Make the necessary visual adjustments the way that the code below. 
+5) Make the necessary visual adjustments the way in the code below. 
 
 Spinner.jsx: 
 
@@ -353,7 +414,7 @@ export default Spinner
 
 ```
 
-6) Go to UserResults.jsx. Import the Spinner.jsx. 
+6) Go to the UserResults.jsx. Import the Spinner.jsx. 
 7) Replace “Loading…” with Spinner
 
 UserResults.jsx : 
@@ -401,7 +462,7 @@ UserResults.jsx :
 9) Now we can return “login” and “avatar_url” directly inside the return statement of the UserItem(). 
 10) Add jsx shown in the code below. 
 11) Add the login and avatar into the jsx. 
-12) Import Link from React Router. Add a router link under the login h2. That link will go to each “user.login”
+12) Import Link from React Router. Add a router link under the login h2. That link will go to “user.login”
 
 UserItem.jsx : 
 
@@ -463,8 +524,7 @@ SETTING UP GITHUB CONTEXT
 16) Wrap all the code inside the return statement with the GithubProvider.
 17) Now we have to clear UserResults.jsx
 18) Delete the fetchUsers function and useState consts we have copied. 
-19) Remove useState and add useContext into import statements. Delete axios import. 
-20) Import GithubContext. 
+19) Remove useState and add useContext into import statements. 20) Import GithubContext. 
 21) On top of the UseResults() function add the destructured useContext const: 
 const {users, loading, fetchUsers} = useContext(GithubContext)
 
@@ -506,7 +566,6 @@ export default UserResults
 GithubContext.js : 
 ```
 import { createContext, useState } from 'react'
-import axios from 'axios'
  
 const GithubContext = createContext()
  
@@ -514,30 +573,34 @@ const GITHUB_URL = process.env.REACT_APP_GITHUB_URL
 const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN
  
 export function GithubProvider({ children }) {
-   // Api data trackers
+ 
    const [users, setUsers] = useState([])
    const [loading, setLoading] = useState(true)
  
-   // Fetch users from the api
    async function fetchUsers() {
-       const response = await axios.get(`${GITHUB_URL}/users`, {
+       const response = await fetch(`${GITHUB_URL}/users`, {
            headers: {
                Authorization: `token ${GITHUB_TOKEN}`
            }
        })
- 
-       // Add .data to reach the users array
-       setUsers(response.data)
+       const data = await response.json()
+       setUsers(data)
        setLoading(false)
    }
-   return <GithubContext.Provider value={{
-       users,
-       loading,
-       fetchUsers
-   }}>
-       {children}
-   </GithubContext.Provider>
+ 
+   return (
+       <GithubContext.Provider
+           value={{
+               users,
+               loading,
+               fetchUsers
+           }}
+       >
+           {children}
+       </GithubContext.Provider>
+   )
 }
+ 
 export default GithubContext
 
 ```
@@ -550,21 +613,21 @@ import Footer from './components/layout/Footer'
 import Home from './pages/Home'
 import About from './pages/About'
 import NotFound from './pages/NotFound'
-import { GithubProvider } from './components/context/github/GithubContext'
+import { GithubProvider } from './context/github/GithubContext'
  
 function App() {
  return (
    <GithubProvider>
      <Router>
-       <div className="flex flex-col justify-between h-screen">
+       <div className='flex flex-col justify-between h-screen'>
          <Navbar />
  
-         <main>
+         <main className='container mx-auto px-3 pb-12'>
            <Routes>
              <Route path='/' element={<Home />} />
              <Route path='/about' element={<About />} />
              <Route path='/notfound' element={<NotFound />} />
-           </Routes>
+             <Route path='*' element={<NotFound />} />          </Routes>
          </main>
  
          <Footer />
@@ -583,7 +646,7 @@ MAKING THE REDUCER HOOK
 2) Make the GithubReducer function with the arguments: state and action. 
 3) State is the current state. 
 4) Action is going to be an object. By the help of the action we will evaluate the data. 
-5) Go to GithubContext.js. Switch useState with useReducer in the import statements. From now on we will use the Reducer hook to track the state. 
+5) Go to GithubContext.js. Change useState with useReducer in the import statements. From now on we will use the Reducer hook to track the state. 
 6) Import GithubReducer.js
 7) Inside the GithubProvider() function, delete the useState consts. Add and initialState object const, that shows the initial state: 
 const initialState = { users: [ ], loading: false }
@@ -599,7 +662,8 @@ dispatch({
 ```
 
 11) We’re going to use the properties of dispatch() in the GithubReducer() function. “Payload” will be the data we fetch from the api. 
-12) Now inside the Githubprovider() function, we have to update GithubContext.Provider : 
+12) Since now we’re dealing with the “state”. 
+inside the Githubprovider() function, we have to update GithubContext.Provider : 
 
 ```
 return <GithubContext.Provider
@@ -612,125 +676,14 @@ return <GithubContext.Provider
    </GithubContext.Provider>
 
 ```
-Because now we’re dealing with the “state”. 
+13) We can complete the GithubReducer(). Write a switch statement with (action.type) expression. 
+14) For now the switch statement has only one case ‘GET_USERS’. 
+15) “GET_USERS” will get the users from the api. Since we get the response, that case will stop loading and change it from true to false. 
 
-GithubContext.js : 
+GithubReducer.js :
 ```
-import { createContext, useReducer } from 'react'
-import axios from 'axios'
-import GithubReducer from './GithubReducer'
+function GithubReducer(state, action) {
  
-const GithubContext = createContext()
- 
-const GITHUB_URL = process.env.REACT_APP_GITHUB_URL
-const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN
- 
-// Context provider function
-export const GithubProvider = ({ children }) => {
-   // Api data tracker
-   const initialState = {
-       users: [],
-       loading: false
-   }
-   const [state, dispatch] = useReducer(githubReducer, initialState)
- 
-   // Fetch users from the api
-   async function fetchUsers() {
-       const response = await axios.get(`${GITHUB_URL}/users`, {
-           headers: {
-               Authorization: `token ${GITHUB_TOKEN}`
-           }
-       })
- 
-       dispatch({
-           type: 'GET_USERS',
-           payload: data
-       })
-   }
-   return <GithubContext.Provider
-       value={{
-           users: state.users,
-           loading: state.loading,
-           fetchUsers
-       }}>
-       {children}
-   </GithubContext.Provider>
-}
- 
-export default GithubContext
-```
-
-GETTING RID OF FETCHING USERS
-
-1) Fetching some user’s data was only for testing the App. So we don’t need them anymore. 
-2) Add a switch statement inside the githubReducer(). 
-3) The switch statement will have the “action.type” as the expression.
-4) First case “GET_USERS” will get the users from the api. Since we get the response, that case will stop loading and change it from true to false. 
-5) And right before we make any requests we want to change the loading as true. 
-6) So we’ll add another case as “SET_LOADING” And that case will set loading if we wait for the response. 
-7) Now inside the fetchUsers() function in GithubContext.js, beneath the dispatch() function, add the setLoading() function. This function will trigger the dispatch({type: SET_LOADING}) function. 
-8) Call the setLoading() function on top of the fetchUsers() function.
-9) Now we can get rid of useEffect and fetchUsers(). 
-10) Go to UserResults.jsx. Delete the entire useEffect hook. Delete the fetchUsers from useContext hook. Remove the useEffect from the import statements. 
-11) Now we cannot see the default 30 first at home page anymore. Next thing we’re going to do is to make the UserSearch component.
-
-GithubContext.js :
-```
-import { createContext, useReducer } from 'react'
-import axios from 'axios'
-import githubReducer from './GithubReducer'
- 
-const GithubContext = createContext()
- 
-const GITHUB_URL = process.env.REACT_APP_GITHUB_URL
-const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN
- 
-// Context provider function
-export function GithubProvider({ children }) {
-   // Api data tracker
-   const initialState = {
-       users: [],
-       loading: false
-   }
-   const [state, dispatch] = useReducer(githubReducer, initialState)
- 
-   // Fetch initial users for testing purposes
-   async function fetchUsers() {
-       setLoading()
-       const response = await axios.get(`${GITHUB_URL}/users`, {
-           headers: {
-               Authorization: `token ${GITHUB_TOKEN}`
-           }
-       })
- 
-       dispatch({
-           type: 'GET_USERS',
-           payload: response.data
-       })
-   }
- 
-   function setLoading() {
-       dispatch({ type: 'SET_LOADING' })
-   }
- 
-   return <GithubContext.Provider
-       value={{
-           users: state.users,
-           loading: state.loading,
-           searchUsers,
-       }}>
-       {children}
-   </GithubContext.Provider>
-}
- 
-export default GithubContext
-
-```
-
- GithubReducer.js :
-
-```
-const githubReducer = (state, action) => {
    switch (action.type) {
        case 'GET_USERS':
            return {
@@ -738,18 +691,153 @@ const githubReducer = (state, action) => {
                users: action.payload,
                loading: false,
            }
-        case 'SET_LOADING':
+   }
+}
+ 
+export default GithubReducer
+
+```
+
+GithubContext.js : 
+```
+import { createContext, useReducer } from 'react'
+import GithubReducer from './GithubReducer'
+ 
+const GithubContext = createContext()
+ 
+const GITHUB_URL = process.env.REACT_APP_GITHUB_URL
+const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN
+ 
+export const GithubProvider = ({ children }) => {
+ 
+   const initialState = {
+       users: [],
+       loading: false
+   }
+ 
+   const [state, dispatch] = useReducer(GithubReducer, initialState)
+ 
+   async function fetchUsers() {
+       const response = await fetch(`${GITHUB_URL}/users`, {
+           headers: {
+               Authorization: `token ${GITHUB_TOKEN}`,
+           },
+       })
+ 
+       const data = await response.json()
+ 
+       dispatch({
+           type: 'GET_USER',
+           payload: data
+       })
+   }
+ 
+   return (
+       <GithubContext.Provider
+           value={{
+               users: state.users,
+               loading: state.loading,
+               fetchUsers,
+           }}
+       >
+           {children}
+       </GithubContext.Provider>
+   )
+}
+ 
+export default GithubContext
+```
+
+GETTING RID OF FETCHING USERS
+
+1) Right before we make any requests we want to change the loading as true. 
+2) So we’ll add another case as “SET_LOADING” And that case will set loading if we wait for the response. 
+3) Go to the GithubContext.js. Beneath the fetchUsers() function, add the setLoading() function. This function will trigger the dispatch({type: SET_LOADING}). 
+4) Call the setLoading() function from the top of the fetchUsers() function.
+5) Now we can get rid of fetchUsers(). 
+6) Fetching some user’s data was only for testing the App. So we don’t need them anymore. 
+7) Go to UserResults.jsx. Delete the entire useEffect hook. Delete the fetchUsers from useContext hook. Remove the useEffect from the import statements. 
+8) Now we cannot see the default 30 first at home page anymore. Next thing we’re going to do is to make the UserSearch component.
+
+GithubContext.js :
+```
+import { createContext, useReducer } from 'react'
+import GithubReducer from './GithubReducer'
+ 
+const GithubContext = createContext()
+ 
+const GITHUB_URL = process.env.REACT_APP_GITHUB_URL
+const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN
+ 
+export const GithubProvider = ({ children }) => {
+ 
+   const initialState = {
+       users: [],
+       loading: false
+   }
+ 
+   const [state, dispatch] = useReducer(GithubReducer, initialState)
+ 
+   async function fetchUsers() {
+       setLoading()
+ 
+       const response = await fetch(`${GITHUB_URL}/users`, {
+           headers: {
+               Authorization: `token ${GITHUB_TOKEN}`,
+           },
+       })
+ 
+       const data = await response.json()
+ 
+       dispatch({
+           type: 'GET_USER',
+           payload: data
+       })
+   }
+ 
+   function setLoading() {
+       dispatch({ type: 'SET_LOADING' })
+   }
+ 
+   return (
+       <GithubContext.Provider
+           value={{
+               users: state.users,
+               loading: state.loading,
+               fetchUsers,
+           }}
+       >
+           {children}
+       </GithubContext.Provider>
+   )
+}
+ 
+export default GithubContext
+
+```
+
+GithubReducer.js :
+
+```
+function GithubReducer(state, action) {
+ 
+   switch (action.type) {
+       case 'GET_USERS':
+           return {
+               ...state,
+               users: action.payload,
+               loading: false,
+           }
+       case 'SET_LOADING':
            return {
                ...state,
                loading: true,
            }
-       default:
-           return state
    }
 }
  
-export default githubReducer
- 
+export default GithubReducer
+
 ```
 
 MAKING THE USERSEARCH COMPONENT
@@ -761,8 +849,9 @@ MAKING THE USERSEARCH COMPONENT
 5) Next, we’ll add the state for the input element. 
 6) Import useState hook. 
 7) On top of the UserSearch() function, place the useState hook with [text, setText]. The initial is going to be an empty string. 
-8) To track the input, add the “value”property with the “text” value. 9) handleChange and handleSubmit with a function. Handle submit should include an if statements, which checks if the text is empty and gives alert.
+8) To track the input, add the “value”property with the “text” value. 9) handleChange and handleSubmit with a function. Handle submit should include an if statement, which checks if the text is empty and gives alert.
 10) We want to display the clear button only when there are users in the state. Otherwise there is no need to display that button. So we will use “useContext” to have access to the users array to see whether it is empty. 
+
 11) Inside the UserSearch.jsx, import useContext. 
 12) Beneath the useState hook, define the Context hook: 
 const { users } = useContext(GithubContext)
@@ -867,8 +956,9 @@ const params = new URLSearchParams({
        })
 
 ```
+5) Update the fetch link with “params”: 
+${GITHUB_URL}/search/users?${params}
 
-5) Now we’ll transform the axios.get method into the standard fetch() method. Remove the axios from the import statements. Remember to transform the response data into json. 
 6) We need only the “items” array from the coming data. So write the {items} with destructuring as the response of coming data. Add items into the dispatch() function as the new “payload”. 
 7)  Inside the GithubContext.Provider, change the fetchUsers value with searchUsers. 
 8) Go to UserSearch.jsx. Add searchUsers to the useContext hook. 
@@ -886,8 +976,7 @@ const GithubContext = createContext()
 const GITHUB_URL = process.env.REACT_APP_GITHUB_URL
 const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN
  
-export function GithubProvider({ children }) {
-   // Api data tracker
+export const GithubProvider = ({ children }) => {
    const initialState = {
        users: [],
        loading: false,
@@ -908,7 +997,7 @@ export function GithubProvider({ children }) {
                Authorization: `token ${GITHUB_TOKEN}`,
            },
        })
-       // Destructure the data, we need only items from the coming data.
+ 
        const { items } = await response.json()
  
        dispatch({
@@ -918,9 +1007,7 @@ export function GithubProvider({ children }) {
    }
  
    // Set loading
-   function setLoading() {
-       dispatch({ type: 'SET_LOADING' })
-   }
+   function setLoading() { dispatch({ type: 'SET_LOADING' }) }
  
    return (
        <GithubContext.Provider
@@ -943,12 +1030,11 @@ UserSearch.jsx :
 ```
 
 import { useState, useContext } from 'react'
-import GithubContext from '../context/github/GithubContext'
+import GithubContext from '../../context/github/GithubContext'
  
 function UserSearch() {
  
    const [text, setText] = useState('')
- 
    const { users, searchUsers } = useContext(GithubContext)
  
    function handleChange(e) {
@@ -959,369 +1045,7 @@ function UserSearch() {
        e.preventDefault()
  
        if (text === '') {
-           alert('Pls enter sth')
-       } else {
-           searchUsers(text)
-           setText('')
-       }
-   }
- 
-   return (
-       <div className='grid grid-cols-1 xl:grid-cols-2 lg:grid-cols-2 md:grid-cols-2 mb-8 gap-8'>
-           <div>
-               <form onSubmit={handleSubmit}>
-                   <div className='form-control'>
-                       <div className='relative'>
-                           <input
-                               type='text'
-                               className='w-full pr-40 bg-gray-200 input input-lg text-black'
-                               placeholder='Search'
-                               value={text}
-                               handleChange={handleChange}
-                           />
-                           <button
-                               type='submit'
-                               className='absolute top-0 right-0 rounded-l-none w-36 btn btn-lg'
-                           >
-                               Go
-                           </button>
-                       </div>
-                   </div>
-               </form>
-           </div>
-           {users.length > 0 && (
-               <div>
-                   <button>
-                       Clear
-                   </button>
-               </div>
-           )}
-       </div>
-   )
-}
-export default UserSearch
-
-```
-
-CLEARING THE USERS
-
-1) Go to GithubContext.js. 
-2) Add the clearUsers() function beneath the searchUsers() function. 
-3) Inside the clearUsers() function, trigger dispatch function with the destructured argument {type: ‘CLEAR_USERS’}
-4) Now go to GithubReducer.js. 
-5) Add the CLEAR_USERS as the new case. 
-6) Here we’ll return the current state and the users as an empty array. 
-7) We have to pass the clearUsers() function as a value into the GithubContext.Provider
-8)  Go to UserSearch.jsx. 
-9) Add clearUsers to the useContext hook. 
-10) Add clearUsers() to the clear button with the onClick property as an event handler. 
-11) Now we can clear the search results with the clear button. 
-
-GithubContext.js : 
-
-```
-import { createContext, useReducer } from 'react'
-import githubReducer from './GithubReducer'
- 
-const GithubContext = createContext()
- 
-const GITHUB_URL = process.env.REACT_APP_GITHUB_URL
-const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN
- 
-// Context provider function
-export const GithubProvider = ({ children }) => {
-   // Api data tracker
-   const initialState = {
-       users: [],
-       loading: false
-   }
-   const [state, dispatch] = useReducer(githubReducer, initialState)
- 
-   // Get search results
-   async function searchUsers(text) {
-       setLoading()
- 
-       const params = new URLSearchParams({
-           q: text
-       })
- 
-       const response = await fetch(`${GITHUB_URL}/search/users?${params}`, {
-           headers: {
-               Authorization: `token ${GITHUB_TOKEN}`
-           }
-       })
-       // Destructure the data, because we need only items from the coming data.
-       const { items } = await response.json()
- 
-       dispatch({
-           type: 'GET_USERS',
-           payload: items
-       })
-       // Clear users from the state
-       function clearUsers() {
-           dispatch({ type: 'CLEAR_USERS' })
-       }
- 
-       // Set Loading
-       function setLoading() {
-           dispatch({ type: 'SET_LOADING' })
-       }
- 
-       return <GithubContext.Provider
-           value={{
-               users: state.users,
-               loading: state.loading,
-               searchUsers,
-               clearUsers
-           }}>
-           {children}
-       </GithubContext.Provider>
-   }
-}
- 
-export default GithubContext
- 
-```
-
-GithubReducer.js : 
-```
-const githubReducer = (state, action) => {
-   switch (action.type) {
-       case 'GET_USERS':
-           return {
-               ...state,
-               users: action.payload,
-               loading: false,
-           }
-       case 'SET_LOADING':
-           return {
-               ...state,
-               loading: true,
-           }
-       case 'CLEAR_USERS':
-           return {
-               ...state,
-               users: [],
-           }
-       default:
-           return state
-   }
-}
- 
-export default githubReducer
-
-```
-UserSearch.jsx : 
-
-```
-
-import { useState, useContext } from 'react'
-import GithubContext from '../context/github/GithubContext'
- 
-function UserSearch() {
- 
-   const [text, setText] = useState('')
- 
-   const { users, searchUsers, clearUsers } = useContext(GithubContext)
- 
-   function handleChange(e) {
-       setText(e.target.value)
-   }
- 
-   function handleSubmit(e) {
-       e.preventDefault()
- 
-       if (text === '') {
-           alert('Pls enter sth')
-       } else {
-           searchUsers(text)
-           setText('')
-       }
-   }
- 
-   return (
-       <div className='grid grid-cols-1 xl:grid-cols-2 lg:grid-cols-2 md:grid-cols-2 mb-8 gap-8'>
-           <div>
-               <form onSubmit={handleSubmit}>
-                   <div className='form-control'>
-                       <div className='relative'>
-                           <input
-                               type='text'
-                               className='w-full pr-40 bg-gray-200 input input-lg text-black'
-                               placeholder='Search'
-                               value={text}
-                               handleChange={handleChange}
-                           />
-                           <button
-                               type='submit'
-                               className='absolute top-0 right-0 rounded-l-none w-36 btn btn-lg'
-                           >
-                               Go
-                           </button>
-                       </div>
-                   </div>
-               </form>
-           </div>
-           {users.length > 0 && (
-               <div>
-                   <button onClick={clearUsers} className='btn btn-ghost btn-lg'>
-                       Clear
-                   </button>
-               </div>
-           )}
- 
-       </div>
-   )
-}
-export default UserSearch
-
-```
-
-MAKING THE ALERT CONTEXT & REDUCER
-
-1) If the user sends a request typing nothing, the window alerts. We’ll arrange a new alert method. 
-2) Inside the context folder, make the “alert” folder. 
-3) Inside the alert folder, create AlertContext.js and AlertReducer.js.
-4) Inside the AlertContext.js, import createContext and useReducer. 
-5) Import AlertReducer.jsx
-6) const AlertContext = createContext()
-7) Make the exportable AlertProvider() function. It needs the destructured {children} argument. 
-8) Inside the AlertProvider(), set up the useReducer:
-const initialState = null
-const [state, dispatch] = useReducer(alertReducer, initialState)
-9) Then return the AlertContext.Provider with the content of {children}. The value of the Provider will be “alert: state”
-10)  Export the AlertContext. 
-11) Go to App.js
-12) Import AlertProvider(). 
-13) We’re going to use the AlertProvider() just under the GithubProvider().
-14)  Go to AlertContext.js
-15) Just above the return statement, make the setAlert function, 
-16) setAlert(msg, type) is going to get two arguments. We will trigger the dispatch() function here with the destructured argument: 
-{type: ‘SET_ALERT’, 
-payload : {msg, type}
-17) Inside the setAlert function, use the setTimeout() method to limit the alert. 
-18) setTimeout() will invoke the dispatch() with a callback function. dispatch() will have a destructured argument {type: ‘REMOVE_ALERT’. The timeout will be 3000ms.
-19) Go to the AlertReducer.js
-20) Make the AlertReducer(state, action) function. 
-21) The switch statement will take (action.type) as the expression. 
-22) Add into the switch statement the ‘SET_ALERT’ and ‘REMOVE_ALERT’ as cases. 
-23) Export the AlertReducer.js
-24) Go to the AlertContext.js
-25) Add setAlert into the the values of AlertContext.Provider
-
-App.js : 
-```
-import './index.css';
-import { BrowserRouter as Route, Routes } from 'react-router-dom'
-import Navbar from './components/layouts/Navbar'
-import Footer from './components/layouts/Footer'
-import Home from './pages/Home'
-import About from './pages/About'
-import NotFound from './pages/NotFound'
-import { GithubProvider } from './context/github/GithubContext'
-import { AlertProvider } from './context/alert/AlertContext'
- 
-function App() {
- return (
-   <GithubProvider>
-     <AlertProvider>
-       <div className='flex flex-col justify-between h-screen'>
-         <Navbar />
- 
-         <main className='container mx-auto px-3 pb-12'>
-           <Routes>
-             <Route path='/' element={<Home />} />
-             <Route path='/about' element={<About />} />
-             <Route path='/notfound' element={<NotFound />} />
-             <Route path='*' element={<NotFound />} />
-           </Routes>
-         </main>
-         <Footer />
-       </div>
-     </AlertProvider>
-   </GithubProvider>
- )
-}
- 
-export default App;
-
-```
-
-AlertContext.js : 
-```
-import { createContext, useReducer } from 'react'
-import AlertReducer from './AlertReducer'
- 
-const AlertContext = createContext()
- 
-export function AlertProvider({ children }) {
- 
-   const initialState = null
-   const [state, dispatch] = useReducer(AlertReducer, initialState)
- 
-   // Set an alert
-   function setAlert(msg, type) {
-       dispatch({
-           type: 'SET_ALERT',
-           payload: { msg, type }
-       })
-       setTimeout(() => dispatch({ type: 'REMOVE_ALERT' }), 3000)
-   }
- 
-   return (
-       <AlertContext.Provider
-           value={{
-               alert: state,
-               setAlert
-           }}
-       >
-           {children}
-       </AlertContext.Provider>
-   )
-}
- 
-export default AlertContext
-```
-
-MAKING THE ALERT COMPONENT
-
-1) Go to the UserSearch.jsx. 
-2) Import the AlertContext. 
-3) Beneath the GithubContext hook, add the AlertContext hook;
-const {setAlert} = useContext(AlertContext)
-4) Now we’ll change the handleSubmit() function. Change the alert() method, with setAlert(). 
-5) Go to the layouts folder, create the Alert.jsx. 
-6) Inside the Alert.jsx, import useContext. 
-7) Import AlertContext.jsx
-8) Inside the Alert(), define the useContext hook: 
-const {alert} = useContext(AlertContext)
-9) Inside the return statement enter the jsx code shown below.
-10) Go to the App.js
-11) Import Alert.jsx
-12) Place the Alert inside the main element, above the Routes. 
-
-UserSearch.jsx
-```
-import { useState, useContext } from 'react'
-import GithubContext from '../../context/github/GithubContext'
-import AlertContext from '../../context/alert/AlertContext'
- 
-function UserSearch() {
- 
-   const [text, setText] = useState('')
- 
-   const { users, searchUsers, clearUsers } = useContext(GithubContext)
-   const { setAlert } = useContext(AlertContext)
- 
-   function handleChange(e) {
-       setText(e.target.value)
-   }
- 
-   function handleSubmit(e) {
-       e.preventDefault()
- 
-       if (text === '') {
-           setAlert('Please enter something', 'error')
+           alert('hop')
        } else {
            searchUsers(text)
            setText('')
@@ -1353,26 +1077,391 @@ function UserSearch() {
            </div>
            {users.length > 0 && (
                <div>
-                   < button onClick={clearUsers} className='btn btn-ghost btn-lg' >
+                   <button>
                        Clear
-                   </button >
+                   </button>
                </div>
            )}
+ 
        </div>
    )
+ 
 }
  
 export default UserSearch
 
 ```
+
+CLEARING THE USERS
+
+1) Go to GithubContext.js. 
+2) Add the clearUsers() function beneath the searchUsers() function. 
+3) Inside the clearUsers() function, trigger dispatch function with the destructured argument {type: ‘CLEAR_USERS’}
+4) Now go to GithubReducer.js. 
+5) Add the CLEAR_USERS as the new case. 
+6) Here we’ll return the current state and the users as an empty array. 
+7) We have to pass the clearUsers() function as a value into the GithubContext.Provider
+8)  Go to UserSearch.jsx. 
+9) Add clearUsers to the useContext hook. 
+10) Add clearUsers() to the clear button with the onClick property as an event handler. 
+11) Now we can clear the search results with the clear button. 
+
+GithubContext.js : 
+
+```
+import { createContext, useReducer } from 'react'
+import GithubReducer from './GithubReducer'
+ 
+const GithubContext = createContext()
+ 
+const GITHUB_URL = process.env.REACT_APP_GITHUB_URL
+const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN
+ 
+export function GithubProvider({ children }) {
+   const initialState = {
+       users: [],
+       loading: false,
+   }
+ 
+   const [state, dispatch] = useReducer(GithubReducer, initialState)
+ 
+   // Get search results
+   async function searchUsers(text) {
+       setLoading()
+ 
+       const params = new URLSearchParams({
+           q: text,
+       })
+ 
+       const response = await fetch(`${GITHUB_URL}/search/users?${params}`, {
+           headers: {
+               Authorization: `token ${GITHUB_TOKEN}`,
+           },
+       })
+ 
+       const { items } = await response.json()
+ 
+       dispatch({
+           type: 'GET_USERS',
+           payload: items,
+       })
+   }
+ 
+   function clearUsers() {
+       dispatch({ type: 'CLEAR_USERS' })
+   }
+ 
+   // Set loading
+   function setLoading() { dispatch({ type: 'SET_LOADING' }) }
+ 
+   return (
+       <GithubContext.Provider
+           value={{
+               users: state.users,
+               loading: state.loading,
+               searchUsers,
+               clearUsers,
+           }}
+       >
+           {children}
+       </GithubContext.Provider>
+   )
+}
+ 
+export default GithubContext
+```
+
+GithubReducer.js : 
+```
+function GithubReducer(state, action) {
+ 
+   switch (action.type) {
+       case 'GET_USERS':
+           return {
+               ...state,
+               users: action.payload,
+               loading: false,
+           }
+       case 'SET_LOADING':
+           return {
+               ...state,
+               loading: true,
+           }
+       case 'CLEAR_USERS':
+           return {
+               ...state,
+               users: [],
+               loading: false
+           }
+       default:
+           return state
+   }
+}
+ 
+export default GithubReducer
+
+```
+UserSearch.jsx : 
+
+```
+
+import { useState, useContext } from 'react'
+import GithubContext from '../../context/github/GithubContext'
+ 
+function UserSearch() {
+ 
+   const [text, setText] = useState('')
+   const { users, searchUsers, clearUsers } = useContext(GithubContext)
+ 
+   function handleChange(e) {
+       setText(e.target.value)
+   }
+ 
+   function handleSubmit(e) {
+       e.preventDefault()
+ 
+       if (text === '') {
+           alert('hop')
+       } else {
+           searchUsers(text)
+           setText('')
+       }
+   }
+ 
+   return (
+       <div className='grid grid-cols-1 xl:grid-cols-2 lg:grid-cols-2 md:grid-cols-2 mb-8 gap-8'>
+           <div>
+               <form onSubmit={handleSubmit}>
+                   <div className='form-control'>
+                       <div className='relative'>
+                           <input
+                               type='text'
+                               className='w-full pr-40 bg-gray-200 input input-lg text-black'
+                               placeholder='Search'
+                               value={text}
+                               onChange={handleChange}
+                           />
+                           <button
+                               type='submit'
+                               className='absolute top-0 right-0 rounded-l-none w-36 btn btn-lg'
+                           >
+                               Go
+                           </button>
+                       </div>
+                   </div>
+               </form>
+           </div>
+           {users.length > 0 && (
+               <div>
+                   <button onClick={clearUsers}>
+                       Clear
+                   </button>
+               </div>
+           )}
+ 
+       </div>
+   )
+ 
+}
+ 
+export default UserSearch
+
+```
+
+MAKING THE ALERT CONTEXT & REDUCER
+
+1) If the user sends a request typing nothing, the window alerts. We’ll arrange a new alert method. 
+2) Inside the context folder, make the “alert” folder. 
+3) Inside the alert folder, create AlertContext.js and AlertReducer.js.
+4) Inside the AlertContext.js, import createContext and useReducer. 
+5) Import AlertReducer.jsx
+6) const AlertContext = createContext()
+7) Make the exportable AlertProvider() function. It needs the destructured {children} argument. 
+8) Inside the AlertProvider(), set up the useReducer:
+const initialState = null
+const [state, dispatch] = useReducer(alertReducer, initialState)
+9) Then return the AlertContext.Provider with the content of {children}. The value of the Provider will be “alert: state”
+10)  Export the AlertContext. 
+11) Go to App.js
+12) Import AlertProvider(). 
+13) We’re going to use the AlertProvider() just under the GithubProvider().
+14)  Go to AlertContext.js
+15) Just above the return statement, make the setAlert function, 
+16) setAlert(msg, type) is going to get two arguments. We will trigger the dispatch() function here with the destructured argument: 
+{type: ‘SET_ALERT’, 
+payload : {msg, type}
+17) Inside the setAlert function, use the setTimeout() method to limit the alert. 
+18) setTimeout() will invoke the dispatch() with a callback function. dispatch() will have a destructured argument {type: ‘REMOVE_ALERT’. The timeout will be 3000ms.
+19) Add setAlert into the the values of AlertContext.Provider
+20) Go to the AlertReducer.js
+21) Make the AlertReducer(state, action) function. 
+22) The switch statement will take (action.type) as the expression. 
+23) Add into the switch statement the ‘SET_ALERT’ and ‘REMOVE_ALERT’ as cases. 
+24) Export the AlertReducer.js
+25) We can display the new Alert after making the Alert.jsx component.
+
+App.js : 
+```
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import Navbar from './components/layout/Navbar'
+import Footer from './components/layout/Footer'
+import Home from './pages/Home'
+import About from './pages/About'
+import NotFound from './pages/NotFound'
+import { GithubProvider } from './context/github/GithubContext'
+import { AlertProvider } from './context/alert/AlertContext'
+ 
+function App() {
+ return (
+   <GithubProvider>
+     <AlertProvider>
+       <Router>
+         <div className='flex flex-col justify-between h-screen'>
+           <Navbar />
+ 
+           <main className='container mx-auto px-3 pb-12'>
+             <Routes>
+               <Route path='/' element={<Home />} />
+               <Route path='/about' element={<About />} />
+               <Route path='/notfound' element={<NotFound />} />
+               <Route path='*' element={<NotFound />} />
+             </Routes>
+           </main>
+ 
+           <Footer />
+         </div>
+       </Router>
+     </AlertProvider>
+   </GithubProvider>
+ )
+}
+ 
+export default App
+
+```
+
+AlertContext.js : 
+```
+import { createContext, useReducer } from 'react'
+import AlertReducer from './AlertReducer'
+ 
+const AlertContext = createContext()
+ 
+export function AlertProvider({ children }) {
+ 
+   const initialState = null
+   const [state, dispatch] = useReducer(AlertReducer, initialState)
+ 
+   function setAlert(msg, type) {
+       dispatch({
+           type: 'SET_ALERT',
+           payload: { msg, type }
+       })
+       setTimeout(() => {
+           dispatch({
+               type: 'REMOVE_ALERT',
+           })
+       }, 3000)
+   }
+   return (
+       <AlertContext.Provider
+           value={{
+               alert: state,
+               setAlert
+           }}
+       >
+           {children}
+       </AlertContext.Provider >
+   )
+}
+ 
+export default AlertContext
+```
+AlertReducer.js :
+
+```
+function AlertReducer(state, action) {
+ 
+   switch (action.type) {
+       case 'SET_ALERT':
+           return action.payload
+       case 'REMOVE_ALERT':
+           return null
+       default:
+           return state
+   }
+}
+ 
+export default AlertReducer
+
+```
+MAKING THE ALERT COMPONENT
+
+1) Go to the UserSearch.jsx. 
+2) Import the AlertContext. 
+3) Beneath the GithubContext hook, add the AlertContext hook;
+const {setAlert} = useContext(AlertContext)
+4) Now we’ll change the handleSubmit() function. Change the alert() method, with setAlert(). setAlert has two arguments: msg and type. Write an error string as the msg, and type must be “error”
+5) Go to the layouts folder, create the Alert.jsx. 
+6) Inside the Alert.jsx, import useContext. 
+7) Import AlertContext.jsx
+8) Inside the Alert(), define the useContext hook: 
+const {alert} = useContext(AlertContext)
+9) Inside the return statement enter the jsx code shown below.
+10) Go to the App.js
+11) Import Alert.jsx
+12) Place the Alert inside the main element, above the Routes. 
+
+UserSearch.jsx
+```
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import Navbar from './components/layout/Navbar'
+import Footer from './components/layout/Footer'
+import Alert from './components/layout/Alert'
+import Home from './pages/Home'
+import About from './pages/About'
+import NotFound from './pages/NotFound'
+import { GithubProvider } from './context/github/GithubContext'
+import { AlertProvider } from './context/alert/AlertContext'
+ 
+function App() {
+ return (
+   <GithubProvider>
+     <AlertProvider>
+       <Router>
+         <div className='flex flex-col justify-between h-screen'>
+           <Navbar />
+ 
+           <main className='container mx-auto px-3 pb-12'>
+             <Alert />
+             <Routes>
+               <Route path='/' element={<Home />} />
+               <Route path='/about' element={<About />} />
+               <Route path='/notfound' element={<NotFound />} />
+               <Route path='*' element={<NotFound />} />
+             </Routes>
+           </main>
+ 
+           <Footer />
+         </div>
+       </Router>
+     </AlertProvider>
+   </GithubProvider>
+ )
+}
+ 
+export default App
+
+```
 Alert.jxs
 ```
 import { useContext } from 'react'
-import AlertContext from '../context/alert/AlertContext'
+import AlertContext from '../../context/alert/AlertContext'
  
 function Alert() {
  
    const { alert } = useContext(AlertContext)
+ 
    return (
        alert !== null && (
            <p className='flex items-start mb-4 space-x-2'>
@@ -1396,19 +1485,20 @@ function Alert() {
            </p>
        )
    )
+ 
 }
  
 export default Alert
+ 
 
 ```
 App.js
 
 ```
-import './index.css';
-import { BrowserRouter as Route, Routes } from 'react-router-dom'
-import Navbar from './components/layouts/Navbar'
-import Footer from './components/layouts/Footer'
-import Alert from './components/layouts/Alert';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import Navbar from './components/layout/Navbar'
+import Footer from './components/layout/Footer'
+import Alert from './components/layout/Alert'
 import Home from './pages/Home'
 import About from './pages/About'
 import NotFound from './pages/NotFound'
@@ -1419,26 +1509,29 @@ function App() {
  return (
    <GithubProvider>
      <AlertProvider>
-       <div className='flex flex-col justify-between h-screen'>
-         <Navbar />
+       <Router>
+         <div className='flex flex-col justify-between h-screen'>
+           <Navbar />
  
-         <main className='container mx-auto px-3 pb-12'>
-           <Alert />
-           <Routes>
-             <Route path='/' element={<Home />} />
-             <Route path='/about' element={<About />} />
-             <Route path='/notfound' element={<NotFound />} />
-             <Route path='*' element={<NotFound />} />
-           </Routes>
-         </main>
-         <Footer />
-       </div>
+           <main className='container mx-auto px-3 pb-12'>
+             <Alert />
+             <Routes>
+               <Route path='/' element={<Home />} />
+               <Route path='/about' element={<About />} />
+               <Route path='/notfound' element={<NotFound />} />
+               <Route path='*' element={<NotFound />} />
+             </Routes>
+           </main>
+ 
+           <Footer />
+         </div>
+       </Router>
      </AlertProvider>
    </GithubProvider>
  )
 }
  
-export default App;
+export default App
 
 ```
 
@@ -1464,9 +1557,10 @@ user: state.user
 15) Delete the params const. We don’t need any params. 
 16) Modify the endpoint in the fetch() as:
 ${GITHUB_URL}/users/${login}
-17) Under the response const, make an if statement. That conditional will check the response status. And if the response is 404 it will direct /notfound`. Else it will get the user by the help of dispatch() function. 
-18) Now go to the GithubReducer.js
-19) Add ‘GET_USER’ case: 
+17) Under the response const, make an if statement. That conditional will check the response status. And if the response is 404 it will direct /notfound. Else it will get the user by the help of dispatch() function. 
+18) Add the getUser() function into the values of GithubContext.Provider. 
+19) Now go to the GithubReducer.js
+20) Add ‘GET_USER’ case: 
 ```
 case 'GET_USER:
            return {
@@ -1476,7 +1570,6 @@ case 'GET_USER:
            }
 ```
 
-20) Add the getUser() function into the values of GithubContext.Provider. 
 21) Go to the User.jsx
 22) Import {useContext, useEffect} 
 23) Import GithubContext.js
@@ -1539,25 +1632,25 @@ import Home from './pages/Home'
 import About from './pages/About'
 import NotFound from './pages/NotFound'
 import User from './pages/User'
-import { GithubProvider } from './components/context/github/GithubContext'
-import { AlertProvider } from './components/context/alert/AlertContext'
+import { GithubProvider } from './context/github/GithubContext'
+import { AlertProvider } from './context/alert/AlertContext'
  
 function App() {
  return (
    <GithubProvider>
      <AlertProvider>
        <Router>
-         <div className="flex flex-col justify-between h-screen">
+         <div className='flex flex-col justify-between h-screen'>
            <Navbar />
  
-           <main>
+           <main className='container mx-auto px-3 pb-12'>
              <Alert />
              <Routes>
                <Route path='/' element={<Home />} />
                <Route path='/about' element={<About />} />
+               <Route path='/user:login' element={<User />} />
                <Route path='/notfound' element={<NotFound />} />
                <Route path='*' element={<NotFound />} />
-               <Route path='/user/:login' element={<User />} />
              </Routes>
            </main>
  
@@ -1574,16 +1667,19 @@ export default App
 User.jsx :
 ```
 import { useContext, useEffect } from 'react'
-import GithubContext from '../components/context/github/GithubContext'
+import GithubContext from '../context/github/GithubContext'
  
 function User({ match }) {
+ 
    const { getUser, user } = useContext(GithubContext)
  
    useEffect(() => {
        getUser(match.params.login)
    }, [])
  
-   return <div>{user.login}</div>
+   return (
+       <div>{user.login}</div>
+   )
 }
  
 export default User
@@ -1601,10 +1697,9 @@ const GITHUB_URL = process.env.REACT_APP_GITHUB_URL
 const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN
  
 export function GithubProvider({ children }) {
-   // Api data tracker
    const initialState = {
-       user: {},
        users: [],
+       user: {},
        loading: false,
    }
  
@@ -1623,7 +1718,7 @@ export function GithubProvider({ children }) {
                Authorization: `token ${GITHUB_TOKEN}`,
            },
        })
-       // Destructure the data, we need only items from the coming data.
+ 
        const { items } = await response.json()
  
        dispatch({
@@ -1632,20 +1727,20 @@ export function GithubProvider({ children }) {
        })
    }
  
-   // Get user
    async function getUser(login) {
        setLoading()
  
-       const response = await fetch(`${GITHUB_URL}/users/${login}`, {
+       const response = await fetch(`${GITHUB_URL}users/${login}`, {
            headers: {
                Authorization: `token ${GITHUB_TOKEN}`,
            },
        })
  
-       if (response.status === 404) {
+       if (response.status === 400) {
            window.location = '/notfound'
        } else {
            const data = await response.json()
+ 
  
            dispatch({
                type: 'GET_USER',
@@ -1653,23 +1748,19 @@ export function GithubProvider({ children }) {
            })
        }
    }
-   // Clear users from the state
+ 
    function clearUsers() {
-       dispatch({
-           type: 'CLEAR_USERS'
-       })
+       dispatch({ type: 'CLEAR_USERS' })
    }
  
    // Set loading
-   function setLoading() {
-       dispatch({ type: 'SET_LOADING' })
-   }
+   function setLoading() { dispatch({ type: 'SET_LOADING' }) }
  
    return (
        <GithubContext.Provider
            value={{
-               user: state.user,
                users: state.users,
+               user: state.user,
                loading: state.loading,
                searchUsers,
                clearUsers,
@@ -1682,11 +1773,15 @@ export function GithubProvider({ children }) {
 }
  
 export default GithubContext
+   )
+}
+ 
+export default GithubContext
 
 ```
 GithubReducer.js
 ```
-const githubReducer = (state, action) => {
+function GithubReducer(state, action) {
  
    switch (action.type) {
        case 'GET_USERS':
@@ -1699,7 +1794,7 @@ const githubReducer = (state, action) => {
            return {
                ...state,
                user: action.payload,
-               loading: false,
+               loading: false
            }
        case 'SET_LOADING':
            return {
@@ -1710,13 +1805,16 @@ const githubReducer = (state, action) => {
            return {
                ...state,
                users: [],
+               loading: false
            }
        default:
            return state
    }
 }
-export default githubReducer
+ 
+export default GithubReducer
 ```
+
 MAKING THE USER PROFILE
 
 1) Go to the User.jsx. Import some necessary icons: 
@@ -1744,7 +1842,8 @@ const {
  } = user
 ```
 
-6) Inside the return statement enter jsx shown in the code: 
+6) Inside the return statement enter jsx shown in the code.
+
 7) Go to the index.css. We’re going to handle the corner issue of the profile photos:
 .custom-card-image .card.image-full:before {
  border-radius: 0.5rem;
@@ -1754,19 +1853,18 @@ const {
 User.jsx : 
 
 ```
-import { FaCodepen, FaStore, FaUserFriends, FaUsers } from 'react-icons/fa'
-import { useEffect, useContext } from 'react'
-import { useParams } from 'react-router-dom'
-import { Link } from 'react-router-dom'
-import Spinner from '../components/layouts/Spinner'
+import { useContext, useEffect } from 'react'
 import GithubContext from '../context/github/GithubContext'
+import { FaCodepen, FaStore, FaUserFriends, FaUsers } from 'react-icons/fa'
+import { Link } from 'react-router-dom'
+import Spinner from '../components/layout/Spinner'
  
-function User() {
+function User({ match }) {
+ 
    const { getUser, user, loading } = useContext(GithubContext)
-   const params = useParams()
  
    useEffect(() => {
-       getUser(match.paraml.login)
+       getUser(match.params.login)
    }, [])
  
    const {
@@ -1845,8 +1943,8 @@ function User() {
                                <div className='stat'>
                                    <div className='stat-title text-md'>Website</div>
                                    <div className='text-lg stat-value'>
-                                       <a href={websiteUrl} target='_blank' rel='noreferrer'>
-                                           {websiteUrl}
+                                       <a href='' target='_blank' rel='noreferrer'>
+                                           Web Site
                                        </a>
                                    </div>
                                </div>
@@ -1912,21 +2010,21 @@ function User() {
                        </div>
                    </div>
                </div>
- 
-               <RepoList repos={repos} />
            </div>
        </>
    )
+ 
 }
  
 export default User
 
 ```
+
 GETTING USER REPOS
 
 1) Go to the GithubContext.js
 2) Add into initialState, repos as an empty array. 
-3)  Inside the values of GithubContext.Provider, add: 
+3) Inside the values of GithubContext.Provider, add: 
 repos: state.repos. 
 4) Copy the searchResults() function and make the getUserRepos(). 
 5) It will take the “login” argument. 
@@ -1936,7 +2034,6 @@ ${GITHUB_URL}/search/users/${login}/repos
 8) Change {items} to data, because we’re getting the data not the items.
 9) Change the dispatch()  function. Type will be ‘GET_REPOS’ and the payload will be “data”. 
 10)  Pass down the getUserRepos into GithubContext.Provider
-
 11) Go to the GithubReducer.js. 
 12) Update the ‘GET_USER’ case: 
 ```
@@ -1953,14 +2050,13 @@ case 'GET_USER_AND_REPOS':
 15) Go to the User.jsx
 16) Import RepoLIst.jsx
 17) Add getUserRepos and “repos” to the useContext hook. 
-18) RepoList inside the User.jsx has the “repos” prop.
+18) Add RepoList inside the User.jsx with the “repos” prop.
 19) Got to the RepoList.jsx
 20) In RepoList() add the {repos} as the argument with destructuring. 
 21) Import PropTypes. 
 22) Under the RepoList(), define the propTypes of repos as a required array. 
 23) Add the jsx below in the code inside the return statement. 
 24) Now we can display the repositories of the user in an alphabetic order. 
-
 25) Go to GithubContext.js
 26) To get the latest repos add a new const “params” inside the getUserRepos(): 
 ```
@@ -2337,7 +2433,7 @@ MAKING THE REPO ITEMS
 6) Adjust the repo propType as object.isRequired. 
 7) Import the Fa icons inside the code below. 
 8) Enter the jsx shown in the code below. 
-9) Inside RepoItem() define the destructured repo const:
+9) Inside RepoItem({repo}) define the destructured repo const:
 ```
 const {
        name,
@@ -3072,8 +3168,8 @@ export async function getUserAndRepos(login) {
 ```
 
 GithubReducer.js : 
-
 ```
+
 const githubReducer = (state, action) => {
    switch (action.type) {
        case 'GET_USERS':
@@ -3105,4 +3201,6 @@ const githubReducer = (state, action) => {
 }
  
 export default githubReducer 
+
 ```
+
