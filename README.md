@@ -11,8 +11,8 @@ SETTING UP TAILWIND AND DAISY UI
 https://daisyui.com/docs/install/
 5) Install DaisyUI. 
 6) The tailwind.config.js must be in that way: 
-```
 
+```
 module.exports = {
  purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
  content: ['./src/**/*.{js,jsx,ts,tsx}'],
@@ -64,7 +64,7 @@ Navbar.propTypes = {
 }
 ```
 
-16) Inside the Navbar(), type the code below:
+16) Inside the Navbar(), type the code shown below:
 
 Navbar.jsx : 
 ```
@@ -143,7 +143,7 @@ MAKING THE FOOTER COMPONENT
 
 ```
 function Footer() {
-   const footerYear = newDate().getFullYear()
+   const footerYear = new Date().getFullYear()
  
    return (
        <footer className='footer p-10 bg-gray-700 text-primary-content footer-center'>
@@ -303,8 +303,8 @@ MAKING THE USERRESULTS COMPONENT
 1) Inside the components folder make the “users” folder. 
 2) In that folder create the UserResults.jsx file. 
 3) Go to the Home.jsx. Import UserResults(). 
-4) Add the UserResults inside the div. 
-5) Import “useEffect” “useState” into the UserResults.jsx. 
+4) Add the UserResults component inside the div. 
+5) Go to UserResults.jsx. Import “useEffect” “useState”.
 6) Inside the UserResults(), make the asynchronous function fetchUsers() to fetch the users from Github Api. Assign the data to the response const. And console.log “data” to reach the users array.
 7) You can see an array of 30 users inside the response in the console. 
 8) Make the useEffect hook.
@@ -313,17 +313,15 @@ MAKING THE USERRESULTS COMPONENT
 ```
 const [users, setUsers] = useState([])
 const [loading, setLoading] = useState(true)
-
- ```
+```
 11) Instead of console logging the response, use setUsers. 
 12) Under that function, use setLoading(false). 
 13) In the div of the return statement add the tailwind classes in the code below. 
 14) In that div we will map through the users. 
 15) With map() method, map the users  and show the data in an h3 element. To reach the users we have to map “login”. 
-16) Add UserResults to the Home page.
-17) Now you can display the users list in the home page.
-18) If we wait for the data we will show a “Loading…” warning. So we will add an if statement for conditional rendering. 
-19) Wrap the return statement with an if conditional. If the data doesn’t show up, display an h3 element with a “Loading…” content. 
+16) Now you can display the users list in the home page.
+17) If we wait for the data we will show a “Loading…” warning. So we will add an if statement for conditional rendering. 
+18) Wrap the return statement with an if conditional. If the data doesn’t show up, display an h3 element with a “Loading…” content. 
 
 UserResults.jsx :
 
@@ -506,7 +504,7 @@ export default UserItem
 SETTING UP GITHUB CONTEXT
 
 1) We’re going to have more than one context. 
-2) Inside the components folder, create the context folder. 
+2) Inside the src folder, create the context folder. 
 3) Inside the context folder, create the github folder. 
 4) Inside the github folder, create GithubContext.js. 
 5) Import createContext into the GithubContext.js
@@ -514,7 +512,7 @@ SETTING UP GITHUB CONTEXT
 7) Shorten the Github Url and Github token with two consts. 
 8) Make the GithubProvider({children}) function to export. 
 9) Copy two Api data tracker useState const in the UserResults.jsx and paste into the provider function. Import useState into the GithubContext.js
-10) Copy the fetchUsers() function from UserResults() and paste it under the useState hooks in the provider function. Import axios into the GithubContext.js
+10) Copy the fetchUsers() function from UserResults() and paste it under the useState hooks in the provider function. 
 11) We can rearrange the fetchUser() function with GITHUB_URL and GITHUB_TOKEN consts. 
 12) At the bottom of the provider function, return GithubContext.Provider
 12) GithubContext.Provider will have the destructured “users” and “loading” and “fetchUsers” props. And it will contend with {children}. 
@@ -689,8 +687,10 @@ function GithubReducer(state, action) {
            return {
                ...state,
                users: action.payload,
-               loading: false,
+               loading: false
            }
+       default:
+           return state
    }
 }
  
@@ -754,10 +754,11 @@ GETTING RID OF FETCHING USERS
 2) So we’ll add another case as “SET_LOADING” And that case will set loading if we wait for the response. 
 3) Go to the GithubContext.js. Beneath the fetchUsers() function, add the setLoading() function. This function will trigger the dispatch({type: SET_LOADING}). 
 4) Call the setLoading() function from the top of the fetchUsers() function.
-5) Now we can get rid of fetchUsers(). 
-6) Fetching some user’s data was only for testing the App. So we don’t need them anymore. 
-7) Go to UserResults.jsx. Delete the entire useEffect hook. Delete the fetchUsers from useContext hook. Remove the useEffect from the import statements. 
-8) Now we cannot see the default 30 first at home page anymore. Next thing we’re going to do is to make the UserSearch component.
+5) Go to GithubReducer.js and add SET_LOADING as a new case.
+6) Now we can get rid of fetchUsers(). 
+7) Fetching some user’s data was only for testing the App. So we don’t need them anymore. 
+8) Go to UserResults.jsx. Delete the entire useEffect hook. Delete the fetchUsers from useContext hook. Remove the useEffect from the import statements. 
+9) Now we cannot see the default 30 first at home page anymore. Next thing we’re going to do is to make the UserSearch component.
 
 GithubContext.js :
 ```
@@ -844,18 +845,52 @@ MAKING THE USERSEARCH COMPONENT
 
 1) Inside the users folder, create the UserSearch.jsx. 
 2) Go to Home.jsx and add the UserSearch above the UserResults.
-3) Turn back to UserSearch.jsx. Add the Tailwind classes to the search div shown in the code below.
+3) Turn back to UserSearch.jsx. Add the Tailwind classes to the search div shown in the code below:
+
+```
+return (
+       <div className='grid grid-cols-1 xl:grid-cols-2 lg:grid-cols-2 md:grid-cols-2 mb-8 gap-8'>
+           <div>
+               <form>
+                   <div className='form-control'>
+                       <div className='relative'>
+                           <input
+                               type='text'
+                               className='w-full pr-40 bg-gray-200 input input-lg text-black'
+                               placeholder='Search'
+                           />
+                           <button
+                               type='submit'
+                               className='absolute top-0 right-0 rounded-l-none w-36 btn btn-lg'
+                           >
+                               Go
+                           </button>
+                       </div>
+                   </div>
+               </form>
+           </div>
+          
+               <div>
+                   <button>
+                       Clear
+                   </button>
+               </div>
+ 
+       </div>
+   )
+```
+
 4) Create a “form” element for the search. Inside the form element make an input, a submit button and a “clear” button. 
 5) Next, we’ll add the state for the input element. 
 6) Import useState hook. 
 7) On top of the UserSearch() function, place the useState hook with [text, setText]. The initial is going to be an empty string. 
-8) To track the input, add the “value”property with the “text” value. 9) handleChange and handleSubmit with a function. Handle submit should include an if statement, which checks if the text is empty and gives alert.
+8) To track the input, add the “value”property with the “text” value. 
+9) handleChange and handleSubmit with a function. Handle submit should include an if statement, which checks if the text is empty and gives alert.
 10) We want to display the clear button only when there are users in the state. Otherwise there is no need to display that button. So we will use “useContext” to have access to the users array to see whether it is empty. 
-
 11) Inside the UserSearch.jsx, import useContext. 
 12) Beneath the useState hook, define the Context hook: 
 const { users } = useContext(GithubContext)
-13) Now we will wrap the clear button div with a ternary operator which looks for if the users array is empty. We can check it out with “users.length”
+13) Now we will wrap the clear button div with a ternary operator which looks for if the users array is empty. We can check it out with “users.length”.
 
 UserSearch.jsx :
 
@@ -877,7 +912,7 @@ function UserSearch() {
        e.preventDefault()
  
        if (text === '') {
-           alert('Pls enter sth')
+           alert('Please enter something')
        } else {
            // search users
            console.log(text)
@@ -948,7 +983,7 @@ SEARCHING THE USERS
 2) We’re going to change the fetchUsers() as searchUsers(). 
 3) The searchUsers(text) will take the “text” as an argument, which is typed in the input. 
 3) Under the setLoading(), add the search parameters within the “params” object const. 
-4) Github wants the “user search” with the “q” parameter. So the “q” parameter will be the text. 
+4) Github expects the “user search” with the “q” parameter. So the “q” parameter will be the text. 
 
 ```
 const params = new URLSearchParams({
@@ -1556,13 +1591,13 @@ user: state.user
 14) The argument of the function will be “login”. 
 15) Delete the params const. We don’t need any params. 
 16) Modify the endpoint in the fetch() as:
-${GITHUB_URL}/users/${login}
+‘${GITHUB_URL}/users/${login}`
 17) Under the response const, make an if statement. That conditional will check the response status. And if the response is 404 it will direct /notfound. Else it will get the user by the help of dispatch() function. 
 18) Add the getUser() function into the values of GithubContext.Provider. 
 19) Now go to the GithubReducer.js
 20) Add ‘GET_USER’ case: 
 ```
-case 'GET_USER:
+case 'GET_USER':
            return {
                ...state,
                user: action.payload,
@@ -2553,8 +2588,6 @@ REFACTORING-1: MOVING SEARCHUSERS TO ACTIONS FILE
 18) Add “dispatch”  inside the useContext hook. 
 19) Delete searchUsers from the GithubContext.Provider. 
 
-
-
 GithubContext.js :
 
 ```
@@ -3203,4 +3236,3 @@ const githubReducer = (state, action) => {
 export default githubReducer 
 
 ```
-
